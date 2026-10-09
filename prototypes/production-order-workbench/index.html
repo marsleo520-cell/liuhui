@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>原型：生产订单整合</title>
+  <style>
+    :root {
+      --ink: #1d2129;
+      --muted: #86909c;
+      --line: #e5e6eb;
+      --bg: #f2f3f5;
+      --card: #fff;
+      --green: #00b42a;
+      --green-soft: #e8ffea;
+      --orange: #ff7d00;
+      --orange-soft: #fff7e8;
+      --fill: #c8f7d4;
+      --yellow: #fff3b0;
+      --danger: #cb272d;
+      --focus: #165dff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--bg); font: 13px/1.5 "Segoe UI", "PingFang SC", "Noto Sans SC", sans-serif; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+    .control { background: #1d2129; color: #f7f8fa; padding: 10px 14px 12px; }
+    .control p { margin: 0 0 8px; font-size: 12px; }
+    .control-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .control-row + .control-row { margin-top: 6px; }
+    .control button { border: 0; background: #353a42; color: #fff; border-radius: 999px; padding: 5px 10px; }
+    .control button[aria-pressed="true"] { background: #fff; color: #1d2129; }
+    .flag { color: #d5dbe3; font-size: 12px; }
+    .note { width: min(1280px, calc(100% - 24px)); margin: 12px auto 0; color: #4e5969; }
+    .shell { width: min(1440px, calc(100% - 24px)); margin: 12px auto 32px; }
+    body.narrow .shell, body.narrow .note { width: min(390px, calc(100% - 12px)); }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+    .sample { display: inline-block; margin-bottom: 8px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: #fff; }
+    h1 { font-size: 16px; margin: 0 0 10px; }
+    .toolbar, .actions, .pager { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .toolbar { margin-bottom: 10px; }
+    .btn, .btn-green, .btn-line, .mini { border-radius: 4px; padding: 6px 10px; border: 1px solid var(--line); background: #fff; }
+    .btn-green { background: var(--green); color: #fff; border-color: var(--green); }
+    .btn-line { color: #4e5969; }
+    .link { border: 0; background: transparent; color: var(--green); padding: 0 4px; }
+    .link[disabled], .btn[disabled] { color: #c9cdd4; cursor: not-allowed; }
+    .tag { display: inline-block; min-width: 52px; text-align: center; border-radius: 4px; padding: 2px 6px; }
+    .tag.green { background: var(--green); color: #fff; }
+    .tag.orange { background: var(--orange); color: #fff; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { border-bottom: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: middle; white-space: nowrap; }
+    th { background: #f7f8fa; color: #4e5969; font-weight: 600; white-space: nowrap; }
+    .more { position: relative; display: inline-block; }
+    .notice, .sim, .error, .ok { border-radius: 6px; padding: 8px 10px; margin: 0 0 10px; }
+    .notice { background: #fff7e8; color: #7a4e00; }
+    .sim { background: #f2f3f5; color: #4e5969; }
+    .error { background: #ffece8; color: var(--danger); }
+    .ok { background: #e8ffea; color: #008026; }
+    .filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; background: #f7f8fa; padding: 12px; border-radius: 6px; margin-bottom: 10px; }
+    .filters label, .field label { display: flex; flex-direction: column; gap: 4px; color: #4e5969; }
+    .req::before { content: "* "; color: var(--danger); }
+    input, select, textarea { border: 1px solid #c9cdd4; border-radius: 4px; padding: 6px 8px; background: #fff; width: 100%; }
+    textarea { min-height: 72px; resize: vertical; }
+    input[readonly], textarea[readonly] { background: #f2f3f5; }
+    .fill[readonly] { background: var(--fill); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; }
+    .span-2 { grid-column: span 2; }
+    .section { margin-top: 16px; padding-top: 8px; border-top: 1px solid var(--line); }
+    .tabs { display: flex; gap: 0; margin: 8px 0; }
+    .tabs button { border: 1px solid var(--line); background: #fff; padding: 6px 12px; }
+    .tabs button[aria-pressed="true"] { color: var(--green); border-bottom-color: #fff; }
+    .state { text-align: center; padding: 36px 12px; }
+    .spinner { width: 22px; height: 22px; margin: 0 auto 8px; border: 3px solid var(--line); border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .sap-zero { background: var(--yellow); }
+    .mask { position: fixed; inset: 0; background: rgba(29, 33, 41, .45); display: flex; align-items: flex-start; justify-content: center; padding: 48px 16px; }
+    .dialog { width: min(920px, 100%); max-height: calc(100vh - 80px); overflow: auto; background: #fff; border-radius: 8px; padding: 16px; }
+    .dialog-head { display: flex; justify-content: space-between; align-items: center; }
+    .pager { justify-content: flex-end; margin-top: 10px; color: var(--muted); }
+    .back { margin-bottom: 8px; }
+    body.narrow .filters, body.narrow .grid-3 { grid-template-columns: 1fr; }
+    body.narrow .span-2 { grid-column: auto; }
+    body.narrow table, body.narrow thead, body.narrow tbody, body.narrow tr, body.narrow th, body.narrow td { display: block; width: 100%; }
+    body.narrow thead { display: none; }
+    body.narrow tr { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; padding: 6px; }
+    body.narrow td { border: 0; white-space: normal; }
+    body.narrow td::before { content: attr(data-label); display: block; color: var(--muted); font-size: 12px; }
+    body.narrow .control { position: static; }
+  </style>
+</head>
+<body>
+  <header class="control" aria-label="原型控制条">
+    <p>原型控制条，不是正式功能</p>
+    <div class="control-row" role="group" aria-label="场景切换">
+      <button type="button" data-scene="list">订单列表</button>
+      <button type="button" data-scene="route">工艺路线</button>
+      <button type="button" data-scene="bom">物料清单</button>
+      <button type="button" data-scene="detail">订单详情</button>
+      <button type="button" data-scene="oplog">操作日志</button>
+      <button type="button" data-scene="apilog">接口日志</button>
+    </div>
+    <div class="control-row" role="group" aria-label="状态切换">
+      <button type="button" data-mode="empty">空</button>
+      <button type="button" data-mode="loading">加载</button>
+      <button type="button" data-mode="success">成功</button>
+      <button type="button" data-mode="failure">失败</button>
+      <button type="button" data-mode="forbidden">无权限</button>
+      <button type="button" data-mode="boundary">边界</button>
+    </div>
+    <div class="control-row">
+      <button type="button" id="reset">重置</button>
+      <button type="button" id="viewport" aria-pressed="false">窄屏</button>
+      <span id="viewport-flag" class="flag">当前为桌面</span>
+    </div>
+  </header>
+  <p class="note">视觉按提供的界面截图近似还原，仓库没有设计令牌，色值是临时对照。样本数据，仅供走查。</p>
+  <main class="shell" id="app" aria-live="polite"></main>
+  <script>
+    const orders = [
+      order("SAMPLE-28673", "SAMPLE-MAT-3350-01", "样本物料-灭菌顶头袋", "", "SAMPLE-1008U", "样本客户甲", "完工", "SAMPLE-ROUTE-464", "SAMPLE-BOM-3350-01", "104", "样本车间", "样本仓", "样本/量产订单"),
+      order("SAMPLE-17850", "SAMPLE-MAT-15588", "样本物料-灭菌头袋", "", "SAMPLE-0928U", "样本客户乙", "完工", "SAMPLE-ROUTE-465", "SAMPLE-BOM-15588", "80", "样本车间", "样本仓", "样本/量产订单"),
+      order("SAMPLE-97865", "SAMPLE-MAT-3450-02", "样本物料-介入包", "SAMPLE-STYLE-02", "SAMPLE-1007U", "样本客户丙", "已开工", "SAMPLE-ROUTE-466", "SAMPLE-BOM-3450-02", "56", "样本车间", "样本仓", "样本/量产订单")
+    ];
+
+    const processes = {
+      "SAMPLE-28673": [step("0010", "样本工序-包装工作中心", "SAMPLE-OP-210", "104")],
+      "SAMPLE-17850": [step("0010", "样本工序-包装工作中心", "SAMPLE-OP-211", "80")],
+      "SAMPLE-97865": [step("0010", "样本工序-包装工作中心", "SAMPLE-OP-212", "56")]
+    };
+
+    const boms = {
+      "SAMPLE-28673": [
+        bom("0001", "SAMPLE-ITEM-0103", "样本组件-包装袋", "13.000", "PC", "件", "0", "0.125", "13", "13", "100%", false),
+        bom("0002", "SAMPLE-ITEM-0133", "样本组件-灭菌包", "117.000", "EA", "个", "117", "1.125", "13", "0", "100%", true),
+        bom("0003", "SAMPLE-ITEM-8375", "样本组件-合格证", "13.000", "E17", "张", "0", "0.125", "13", "13", "100%", false)
+      ],
+      "SAMPLE-17850": [bom("0001", "SAMPLE-ITEM-1001", "样本组件-袋体", "80.000", "PC", "件", "0", "1", "80", "80", "100%", false)],
+      "SAMPLE-97865": [bom("0001", "SAMPLE-ITEM-2002", "样本组件-介入包材", "56.000", "PC", "件", "0", "1", "56", "0", "100%", true)]
+    };
+
+    let opLogs = [
+      op("o1", "SAMPLE-28673", "2026-10-09 14:26", "样本用户甲", "更新"),
+      op("o2", "SAMPLE-28673", "2026-10-09 09:03", "样本用户乙", "更新"),
+      op("o3", "SAMPLE-17850", "2026-10-08 16:41", "样本用户甲", "更新")
+    ];
+
+    let apiLogs = [
+      api("a1", "SAMPLE-28673", "2026-10-09 15:53:21", "计划工单", "SAP推送订单数据", "/api/sample/sap/shoporder/sync", "1100"),
+      api("a2", "SAMPLE-28673", "2026-10-09 14:30:00", "生产入库", "sap线边入库", "/api/sample/mes/warehouse/in", "860"),
+      api("a3", "SAMPLE-17850", "2026-10-08 11:02:00", "报工模块", "sap同步报工", "/api/sample/mes/report/sync", "48")
+    ];
+
+    const initialApiForm = () => ({
+      start: "2026-10-02T15:56",
+      end: "2026-10-09T15:56",
+      module: "",
+      op: "",
+      sender: "",
+      body: "",
+      response: "",
+      trace: "",
+      exception: "",
+      collapsed: false,
+      error: "",
+      searched: false
+    });
+
+    const state = {
+      scene: "list",
+      mode: "success",
+      planNo: "SAMPLE-28673",
+      narrow: false,
+      retried: false,
+      notice: "",
+      tab: "base",
+      opDetail: null,
+      apiModal: null,
+      apiPretty: false,
+      listOpen: false,
+      listPlan: "",
+      listError: "",
+      page: 1,
+      pageSize: 20,
+      morePlan: "",
+      checked: {},
+      apiForm: initialApiForm(),
+      synced: false
+    };
+
+    function order(planNo, materialNo, desc, styleNo, batch, customer, prodStatus, routeNo, bomNo, qty, workshop, warehouse, planType) {
+      return { planNo, materialNo, desc, styleNo, batch, customer, publish: "已发布", planStatus: "开启", prodStatus, routeNo, bomNo, qty, unit: "包", version: "1", workshop, warehouse, planType, priority: "3/3", start: "2026-10-09 00:00:00", end: "2026-10-14 00:00:00", expire: "2028-10-07", manager: "样本管理者", color: "样本颜色", size: "样本尺码" };
+    }
+    function step(no, name, code, qty) { return { no, name, code, qty, unit: "包" }; }
+    function bom(no, code, name, qty, unit, unitName, locked, unitQty, win, sap, rate, zero) {
+      return { no, code, name, qty, unit, unitName, locked, unitQty, win, sap, rate, zero, opNo: "0010", opName: "样本工序" };
+    }
+    function op(id, planNo, time, actor, action) {
+      return { id, planNo, time, actor, action, note: "样本：记录到一次更新。变更字段待确认。" };
+    }
+    function api(id, planNo, time, module, action, url, cost) {
+      return {
+        id, planNo, time, module, action, url, cost,
+        ip: "样本-10.0.0.21", status: "200", target: "样本目标地址", trace: "SAMPLE-TRACE-" + id,
+        exception: "无",
+        head: '{"sample":true,"source":"原型"}',
+        body: '{"sample":true,"planNo":"' + planNo + '"}',
+        resp: '{"code":200,"message":"样本：请求成功","success":true}'
+      };
+    }
+
+    function currentOrder() {
+      return orders.find((item) => item.planNo === state.planNo) || orders[0];
+    }
+
+    function boundaryOrders() {
+      const longDesc = "样本物料-名称用于走查超长显示时仍要看见计划号、工艺路线号和BOM号";
+      return [order("SAMPLE-EDGE-2359", "SAMPLE-MAT-EDGE", longDesc, "SAMPLE-STYLE-LONG", "SAMPLE-2359U", "样本客户-名称超长用于边界走查", "完工", "SAMPLE-ROUTE-2359", "SAMPLE-BOM-EDGE", "1", "样本车间", "样本仓-名称超长", "样本/量产订单")]
+        .concat(Array.from({ length: 11 }, (_, index) => order("SAMPLE-EDGE-" + (index + 2), "SAMPLE-MAT-" + index, "样本物料", "", "SAMPLE-0000U", "样本客户", "已开工", "SAMPLE-ROUTE-" + index, "SAMPLE-BOM-" + index, "1", "样本车间", "样本仓", "样本/量产订单")));
+    }
+
+    function listRows() {
+      if (["empty", "loading", "failure", "forbidden"].includes(state.mode)) return [];
+      const source = state.mode === "boundary" ? boundaryOrders() : orders;
+      const keyword = state.listPlan.trim();
+      const filtered = keyword ? source.filter((item) => item.planNo.includes(keyword)) : source;
+      const start = (state.page - 1) * state.pageSize;
+      return { all: filtered, page: filtered.slice(start, start + state.pageSize) };
+    }
+
+    function esc(value) {
+      return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+    }
+
+    function render() {
+      document.body.classList.toggle("narrow", state.narrow);
+      document.querySelectorAll("[data-scene]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.scene === state.scene)));
+      document.querySelectorAll("[data-mode]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode)));
+      document.getElementById("viewport").setAttribute("aria-pressed", String(state.narrow));
+      document.getElementById("viewport-flag").textContent = state.narrow ? "当前为窄屏" : "当前为桌面";
+      const screens = { list: listHtml, route: routeHtml, bom: bomHtml, detail: detailHtml, oplog: opHtml, apilog: apiHtml };
+      document.getElementById("app").innerHTML = screens[state.scene]() + (state.apiModal ? modalHtml() : "");
+    }
+
+    function banner() {
+      return '<span class="sample">样本数据，仅供走查</span>' +
+        (state.retried ? '<p class="ok" id="retry-banner">已重新获取样本数据</p>' : "") +
+        (state.notice ? '<p class="notice" id="notice">' + esc(state.notice) + "</p>" : "");
+    }
+
+    function gate(emptyText, title) {
+      if (state.mode === "loading") {
+        return '<div class="state" id="loading"><div class="spinner"></div><p>正在加载' + title + '</p><button type="button" class="btn-green" id="finish-loading" data-act="finish-loading">结束加载</button></div>';
+      }
+      if (state.mode === "failure") {
+        return '<div class="state" id="failure"><p>' + title + '没有加载出来</p><button type="button" class="btn-green" id="retry" data-act="retry">重试</button></div>';
+      }
+      if (state.mode === "forbidden") {
+        return '<div class="state" id="forbidden"><p>当前账号不能查看' + title + "</p></div>";
+      }
+      if (state.mode === "empty") {
+        return '<div class="state" id="empty"><p>' + emptyText + "</p></div>";
+      }
+      return "";
+    }
+
+    function backButton() {
+      return '<button type="button" class="link back" data-act="back-list">返回订单列表</button>';
+    }
+
+    function listHtml() {
+      const packed = listRows();
+      const rows = packed.page || [];
+      const total = packed.all ? packed.all.length : 0;
+      const body = rows.map((item) => `<tr>
+        <td data-label="选择"><input type="checkbox" data-act="check" data-plan="${item.planNo}" ${state.checked[item.planNo] ? "checked" : ""}></td>
+        <td data-label="计划号">${esc(item.planNo)}</td>
+        <td data-label="物料号">${esc(item.materialNo)}</td>
+        <td data-label="发布状态"><span class="tag green">${esc(item.publish)}</span></td>
+        <td data-label="计划状态"><span class="tag green">${esc(item.planStatus)}</span></td>
+        <td data-label="生产状态"><span class="tag ${item.prodStatus === "已开工" ? "orange" : "green"}">${esc(item.prodStatus)}</span></td>
+        <td data-label="物料描述">${esc(item.desc)}</td>
+        <td data-label="款号">${esc(item.styleNo)}</td>
+        <td data-label="生产批号">${esc(item.batch)}</td>
+        <td data-label="客户">${esc(item.customer)}</td>
+        <td data-label="工艺路线号"><button type="button" class="link" data-act="route" data-plan="${item.planNo}">${esc(item.routeNo)}</button></td>
+        <td data-label="BOM号"><button type="button" class="link" data-act="bom" data-plan="${item.planNo}">${esc(item.bomNo)}</button></td>
+        <td data-label="操作">
+          <button type="button" class="link" data-act="detail" data-plan="${item.planNo}">查看</button>
+          <button type="button" class="link" data-act="oplog" data-plan="${item.planNo}">操作日志</button>
+          <button type="button" class="link" data-act="apilog" data-plan="${item.planNo}">接口日志</button>
+          <span class="more"><button type="button" class="link" data-act="more" data-plan="${item.planNo}">更多</button>
+          ${state.morePlan === item.planNo ? '<span class="actions"><button type="button" class="link" data-act="hold" data-name="拆分">拆分</button><button type="button" class="link" data-act="hold" data-name="编辑">编辑</button><button type="button" class="link" data-act="hold" data-name="删除">删除</button></span>' : ""}
+          </span>
+        </td>
+      </tr>`).join("");
+      const blocked = gate("当前没有生产订单", "生产订单");
+      return `<section class="card" data-screen="list">${banner()}
+        <h1>生产订单</h1>
+        <p class="sim">模拟规则：列表截图的可见列里没有工艺路线号和 BOM 号。按进入路径，把这两个链接和两类日志放在行内。</p>
+        <div class="toolbar">
+          ${["新增", "关闭", "开启", "批量编辑", "勾选导出", "齐套检查", "BOM核对", "套单关联", "导入波次", "波次拆分"].map((name) => `<button type="button" class="${name === "新增" ? "btn-green" : "btn"}" data-act="toolbar" data-name="${name}">${name}</button>`).join("")}
+          <button type="button" class="btn" id="toggle-filter" data-act="toggle-filter">筛选</button>
+        </div>
+        ${state.listOpen ? `<form id="list-form" class="filters">
+          <label>计划号<input id="list-plan" name="plan" value="${esc(state.listPlan)}" placeholder="请输入计划号"></label>
+          <div class="actions"><button class="btn-green" type="submit">搜索</button><button class="btn" type="button" data-act="list-reset">重置</button></div>
+          ${state.listError ? `<p class="error" id="list-error">${esc(state.listError)}</p>` : ""}
+        </form>` : ""}
+        ${blocked || `<div class="table-wrap"><table>
+          <thead><tr><th></th><th>计划号</th><th>物料号</th><th>发布状态</th><th>计划状态</th><th>生产状态</th><th>物料描述</th><th>款号</th><th>生产批号</th><th>客户</th><th>工艺路线号</th><th>BOM号</th><th class="ops">操作</th></tr></thead>
+          <tbody id="order-list">${body || '<tr><td colspan="13">没有符合条件的生产订单</td></tr>'}</tbody>
+        </table></div>
+        <div class="pager"><span>共 ${total} 条（样本）</span>
+          <button type="button" class="btn" data-act="page" data-page="${Math.max(1, state.page - 1)}">上一页</button>
+          <span>第 ${state.page} 页</span>
+          <button type="button" class="btn" data-act="page" data-page="${state.page + 1}">下一页</button>
+        </div>`}
+      </section>`;
+    }
+
+    function routeHtml() {
+      const item = currentOrder();
+      let steps = processes[item.planNo] || [];
+      if (state.mode === "boundary") {
+        steps = [step("0010", "样本工序-名称超长用于确认工序名称、工序代码和数量完整可见", "SAMPLE-OP-EDGE", "104"), step("0020", "样本工序-午夜边界", "SAMPLE-OP-0000", "1")];
+      }
+      const blocked = gate("这张生产订单还没有工艺路线", "工艺路线");
+      const rows = steps.map((line) => `<tr>
+        <td data-label="序号">${esc(line.no)}</td>
+        <td data-label="工序名称">${esc(line.name)}</td>
+        <td data-label="工序代码">${esc(line.code)}</td>
+        <td data-label="工序数量">${esc(line.qty)}</td>
+        <td data-label="工序序号">${esc(line.no)}</td>
+        <td data-label="ERP工序编码">${esc(line.no)}</td>
+        <td data-label="ERP工序描述">${esc(line.name)}</td>
+        <td data-label="ERP工作中心">${esc(line.code)}</td>
+        <td data-label="单位">${esc(line.unit)}</td>
+        <td data-label="备注">样本</td>
+        <td data-label="操作"><button type="button" class="link" data-act="hold" data-name="工序编辑">编辑</button></td>
+      </tr>`).join("");
+      return `<section class="card" data-screen="route">${banner()}${backButton()}<h1>工艺路线</h1>
+        <div class="grid-3">
+          ${readonly("计划号", item.planNo)}${readonly("物料号", item.materialNo)}${readonly("物料描述", item.desc, true)}
+          ${readonly("工艺路线编号", item.routeNo)}${readonly("版本号", item.version)}${readonly("起始日期", state.mode === "boundary" ? "2026-10-09 00:00" : "")}
+          ${readonly("截止日期", state.mode === "boundary" ? "2026-10-09 23:59" : "")}
+          <label class="span-2">备注<input readonly value="样本备注"></label>
+        </div>
+        <div class="section"><h1>工序信息</h1>
+          <button type="button" class="btn" data-act="sync">同步</button>
+          ${state.synced ? '<p class="ok" id="sync-note">样本：已记下一次同步，没有连接外部系统。可打开接口日志查看这条样本。</p>' : ""}
+          ${blocked || `<div class="table-wrap"><table><thead><tr><th>序号</th><th>工序名称</th><th>工序代码</th><th>工序数量</th><th>工序序号</th><th>ERP工序编码</th><th>ERP工序描述</th><th>ERP工作中心</th><th>单位</th><th>备注</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+        </div></section>`;
+    }
+
+    function bomHtml() {
+      const item = currentOrder();
+      let lines = boms[item.planNo] || [];
+      if (state.mode === "boundary") {
+        lines = [bom("0001", "SAMPLE-ITEM-EDGE", "样本组件-名称超长用于确认物料号、数量和 SAP 投料数量仍可见", "1.000", "PC", "件", "0", "1", "1", "0", "100%", true)];
+      }
+      const blocked = gate("这张生产订单还没有物料清单", "物料清单");
+      const rows = lines.map((line) => `<tr>
+        <td data-label="序号">${esc(line.no)}</td><td data-label="物料号">${esc(line.code)}</td><td data-label="物料名称">${esc(line.name)}</td>
+        <td data-label="数量">${esc(line.qty)}</td><td data-label="单位">${esc(line.unit)}</td><td data-label="单位名称">${esc(line.unitName)}</td>
+        <td data-label="可锁定数量">${esc(line.locked)}</td><td data-label="单位数量">${esc(line.unitQty)}</td>
+        <td data-label="WIN+投料数量">${esc(line.win)}</td>
+        <td data-label="SAP投料数量" class="${line.zero ? "sap-zero" : ""}">${esc(line.sap)}</td>
+        <td data-label="制成率">${esc(line.rate)}</td><td data-label="工序编号">${esc(line.opNo)}</td><td data-label="工序名称">${esc(line.opName)}</td>
+        <td data-label="有效期起">${state.mode === "boundary" ? "2026-10-09 00:00" : "待确认"}</td>
+        <td data-label="有效期止">${state.mode === "boundary" ? "2026-10-09 23:59" : "待确认"}</td>
+      </tr>`).join("");
+      return `<section class="card" data-screen="bom">${banner()}${backButton()}<h1>物料清单</h1>
+        <p class="sim">模拟规则：SAP 投料数量为 0 时标黄。有效期起止在截图里被裁切，未确认的显示「待确认」。</p>
+        <div class="grid-3">
+          ${readonly("计划号", item.planNo)}${readonly("物料清单编码", item.bomNo)}${readonly("版本", item.version)}
+          ${readonly("报工数量", item.qty)}${readonly("订单数量", item.qty)}${readonly("物料号", item.materialNo)}
+          ${readonly("物料描述", item.desc, true)}
+        </div>
+        ${blocked || `<div class="table-wrap"><table><thead><tr><th>序号</th><th>物料号</th><th>物料名称</th><th>数量</th><th>单位</th><th>单位名称</th><th>可锁定数量</th><th>单位数量</th><th>WIN+投料数量</th><th>SAP投料数量</th><th>制成率</th><th>工序编号</th><th>工序名称</th><th>有效期起</th><th>有效期止</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+      </section>`;
+    }
+
+    function detailHtml() {
+      const item = currentOrder();
+      const blocked = gate("没有读到这张生产订单", "订单详情");
+      if (blocked) return `<section class="card" data-screen="detail">${banner()}${backButton()}<h1>订单详情</h1>${blocked}</section>`;
+      const longWarehouse = state.mode === "boundary" ? "样本仓-名称超长用于走查查看态字段不被截断到无法辨认" : item.warehouse;
+      return `<section class="card" data-screen="detail">${banner()}${backButton()}<h1>订单详情</h1>
+        <p class="sim">模拟规则：查看态只读。绿色底表示截图里已填写的字段。APS 其他属性页内容未在截图中出现，显示待确认。</p>
+        <div class="actions">
+          <button type="button" class="btn-green" data-act="oplog" data-plan="${item.planNo}">操作日志</button>
+          <button type="button" class="btn-green" data-act="apilog" data-plan="${item.planNo}">接口日志</button>
+        </div>
+        <div class="grid-3">
+          ${field("物料号", item.materialNo, true)}
+          <div class="actions"><button type="button" class="btn" data-act="hold" data-name="选择物料">选择</button></div>
+          ${readonly("物料描述", item.desc)}
+          ${readonly("款号", item.styleNo || "")}
+          ${field("计划类型", item.planType, true)}
+          ${field("数量", item.qty, true)}
+          ${readonly("单位", item.unit)}
+          ${field("车间", item.workshop, true)}
+          ${readonly("计划生产日期", "20261008")}
+          ${field("生产批号", item.batch, true)}
+          ${readonly("生产线", "")}
+          ${readonly("有效期", item.expire)}
+          ${field("计划开始日期", state.mode === "boundary" ? "2026-10-09 00:00:00" : item.start, true)}
+          ${field("计划结束日期", state.mode === "boundary" ? "2026-10-09 23:59:00" : item.end, true)}
+          ${field("优先级", item.priority, true)}
+          ${field("仓库", longWarehouse, true)}
+          ${readonly("原料供应商", "")}
+          <label class="span-2">备注<input readonly value=""></label>
+        </div>
+        <div class="tabs" role="tablist">
+          <button type="button" data-act="tab" data-tab="base" aria-pressed="${state.tab === "base"}">常规信息</button>
+          <button type="button" data-act="tab" data-tab="aps" aria-pressed="${state.tab === "aps"}">APS其他属性</button>
+        </div>
+        ${state.tab === "aps" ? '<p id="aps-panel">待确认。截图没有展示 APS 其他属性的字段。</p>' : `<div class="section"><h1>计划</h1><div class="grid-3">
+          ${readonly("生产管理者", item.manager)}${readonly("生产管理者描述", "样本岗位")}
+          ${linkField("物料清单", item.bomNo, "bom", item.planNo)}
+          ${readonly("物料清单版本", item.version)}${readonly("ERP生产版本", "")}
+          ${linkField("工艺路线", item.routeNo, "route", item.planNo)}
+          ${readonly("工艺路线版本", item.version)}${readonly("颜色", item.color)}${readonly("尺码", item.size)}
+        </div></div>
+        <div class="section"><h1>分配</h1><div class="grid-3">
+          ${readonly("客户编号", "")}${readonly("客户名称", item.customer)}${readonly("委托工厂", "")}
+          ${readonly("客户批号", "")}${readonly("客户订单编号", "")}${readonly("客户生产日期", "")}
+        </div></div>`}
+      </section>`;
+    }
+
+    function opHtml() {
+      const item = currentOrder();
+      let rows = opLogs.filter((line) => line.planNo === item.planNo);
+      if (state.mode === "boundary") {
+        rows = [
+          op("ob1", item.planNo, "2026-10-09 23:59", "样本用户甲-姓名超长用于确认操作人和时间完整可见", "更新"),
+          op("ob2", item.planNo, "2026-10-09 00:00", "样本用户乙", "更新")
+        ];
+      }
+      const blocked = gate("这张生产订单还没有操作日志", "操作日志");
+      if (state.opDetail && !blocked) {
+        const line = rows.find((entry) => entry.id === state.opDetail) || rows[0];
+        return `<section class="card" data-screen="oplog-detail">${banner()}${backButton()}<h1>操作日志</h1>
+          <p class="sim">模拟规则：只记录人的更新。变更字段、变更前、变更后未确认。</p>
+          <dl class="grid-3">
+            <div><dt>操作人</dt><dd id="detail-actor">${esc(line.actor)}</dd></div>
+            <div><dt>操作时间</dt><dd>${esc(line.time)}</dd></div>
+            <div><dt>动作</dt><dd>${esc(line.action)}</dd></div>
+            <div><dt>变更字段</dt><dd>待确认</dd></div>
+            <div><dt>变更前</dt><dd>待确认</dd></div>
+            <div><dt>变更后</dt><dd>待确认</dd></div>
+          </dl>
+          <button type="button" class="btn" data-act="op-back">返回列表</button>
+        </section>`;
+      }
+      const body = rows.map((line) => `<tr>
+        <td data-label="操作时间"><button type="button" class="link" data-act="op-detail" data-id="${line.id}">${esc(line.time)}</button></td>
+        <td data-label="操作人">${esc(line.actor)}</td>
+        <td data-label="动作">${esc(line.action)}</td>
+        <td data-label="说明">${esc(line.note)}</td>
+      </tr>`).join("");
+      return `<section class="card" data-screen="oplog">${banner()}${backButton()}<h1>操作日志</h1>
+        <p>生产订单 ${esc(item.planNo)}（样本）</p>
+        <p class="sim">模拟规则：按时间从新到旧，只读。接口同步不写进这张表。</p>
+        ${blocked || (body ? `<div class="table-wrap"><table><thead><tr><th>操作时间</th><th>操作人</th><th>动作</th><th>说明</th></tr></thead><tbody id="op-list">${body}</tbody></table></div>` : '<div class="state" id="op-empty"><p>这张生产订单还没有操作日志</p></div>')}
+      </section>`;
+    }
+
+    function apiHtml() {
+      const form = state.apiForm;
+      const blocked = gate("没有符合条件的接口日志", "接口日志");
+      const fields = `
+        <label class="req">开始时间<input id="api-start" type="datetime-local" name="start" value="${esc(form.start)}"></label>
+        <label class="req">结束时间<input id="api-end" type="datetime-local" name="end" value="${esc(form.end)}"></label>
+        <label>模块<select name="module"><option value="">请选择</option><option ${form.module === "计划工单" ? "selected" : ""}>计划工单</option><option ${form.module === "生产入库" ? "selected" : ""}>生产入库</option><option ${form.module === "报工模块" ? "selected" : ""}>报工模块</option></select></label>
+        <label>操作<input name="op" value="${esc(form.op)}" placeholder="请输入操作"></label>
+        <label>发送方URL<input name="sender" value="${esc(form.sender)}" placeholder="请输入发送方URL"></label>
+        <label>请求体<input id="api-body" name="body" value="${esc(form.body)}" placeholder="请输入计划号"></label>
+        <label>响应体<input name="response" value="${esc(form.response)}" placeholder="请输入响应体"></label>
+        <label>traceId<input name="trace" value="${esc(form.trace)}" placeholder="请输入traceId"></label>
+        <label>异常信息<input name="exception" value="${esc(form.exception)}" placeholder="请输入异常信息"></label>`;
+      let result = "";
+      if (!blocked && form.searched) {
+        const rows = filterApi();
+        result = rows.length ? `<div class="table-wrap"><table><thead><tr><th>操作IP地址</th><th>操作时间</th><th>消耗时间</th><th>操作 url</th><th>请求状态</th><th>模块</th><th>具体操作</th><th>目标 url</th><th>traceId</th><th>异常信息</th><th>操作</th></tr></thead><tbody id="api-list">${rows.map((line) => `<tr>
+          <td data-label="操作IP地址">${esc(line.ip)}</td>
+          <td data-label="操作时间">${esc(line.time)}</td>
+          <td data-label="消耗时间">${esc(line.cost)}</td>
+          <td data-label="操作 url">${esc(line.url)}</td>
+          <td data-label="请求状态">${esc(line.status)}</td>
+          <td data-label="模块">${esc(line.module)}</td>
+          <td data-label="具体操作">${esc(line.action)}</td>
+          <td data-label="目标 url">${esc(line.target)}</td>
+          <td data-label="traceId">${esc(line.trace)}</td>
+          <td data-label="异常信息">${esc(line.exception)}</td>
+          <td data-label="操作"><button type="button" class="link" data-act="api-view" data-id="${line.id}">查看</button></td>
+        </tr>`).join("")}</tbody></table></div>` : '<div class="state" id="api-empty"><p>没有符合条件的接口日志</p></div>';
+      }
+      return `<section class="card" data-screen="apilog">${banner()}${backButton()}<h1>日志管理</h1>
+        <p class="sim">模拟规则：从订单进入时，把计划号填进请求体。地址、IP、traceId 都是样本，不发起请求。开始时间和结束时间必填。</p>
+        <div class="toolbar"><button type="button" class="btn-green" data-act="api-refresh">刷新</button></div>
+        <form id="api-form" class="filters">${form.collapsed ? "" : fields}
+          <div class="actions">
+            <button type="button" class="link" data-act="api-collapse">${form.collapsed ? "展开" : "收起"}</button>
+            <button type="button" class="btn" data-act="api-reset">重置</button>
+            <button type="submit" class="btn-green" id="api-search">搜索</button>
+          </div>
+          ${form.error ? `<p class="error" id="api-error">${esc(form.error)}</p>` : ""}
+        </form>
+        ${blocked || result}
+      </section>`;
+    }
+
+    function filterApi() {
+      if (["empty", "loading", "failure", "forbidden"].includes(state.mode)) return [];
+      const form = state.apiForm;
+      return apiLogs.filter((line) => {
+        const stamp = line.time.replace(" ", "T").slice(0, 16);
+        if (form.start && stamp < form.start) return false;
+        if (form.end && stamp > form.end) return false;
+        if (form.module && line.module !== form.module) return false;
+        if (form.op && !line.action.includes(form.op)) return false;
+        if (form.body && !line.body.includes(form.body) && line.planNo !== form.body) return false;
+        if (form.trace && !line.trace.includes(form.trace)) return false;
+        if (form.exception && form.exception !== "无" && !line.exception.includes(form.exception)) return false;
+        return true;
+      });
+    }
+
+    function modalHtml() {
+      const line = apiLogs.find((item) => item.id === state.apiModal);
+      if (!line) return "";
+      const pretty = state.apiPretty ? `<pre id="json-preview">${esc(line.body)}\n${esc(line.resp)}</pre>` : "";
+      return `<div class="mask" id="modal"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="dialog-head"><h1 id="modal-title">查看详情</h1><button type="button" class="btn" data-act="modal-close">关闭</button></div>
+        <div class="grid-3">
+          ${readonly("模块", line.module)}${readonly("具体操作", line.action)}${readonly("URL", line.url)}
+          ${readonly("IP", line.ip)}${readonly("traceId", line.trace)}${readonly("异常信息", line.exception)}
+        </div>
+        <label>请求头<textarea readonly>${esc(line.head)}</textarea></label>
+        <label>请求体<textarea readonly>${esc(line.body)}</textarea></label>
+        <label>响应体<textarea readonly>${esc(line.resp)}</textarea></label>
+        ${pretty}
+        <div class="actions"><button type="button" class="btn-green" data-act="json">JSON预览</button><button type="button" class="btn" data-act="modal-close">取消</button></div>
+      </div></div>`;
+    }
+
+    function readonly(label, value, wide) {
+      return `<label class="${wide ? "span-2" : ""}">${label}<input readonly value="${esc(value)}"></label>`;
+    }
+    function field(label, value, filled) {
+      return `<label class="req">${label}<input readonly class="${filled ? "fill" : ""}" value="${esc(value)}"></label>`;
+    }
+    function linkField(label, value, act, plan) {
+      return `<label class="req">${label}<button type="button" class="link" data-act="${act}" data-plan="${plan}">${esc(value)}</button></label>`;
+    }
+
+    function openOrder(plan, scene) {
+      state.planNo = plan;
+      state.scene = scene;
+      state.opDetail = null;
+      state.apiModal = null;
+      state.notice = "";
+      if (scene === "apilog") {
+        state.apiForm.body = plan;
+        state.apiForm.searched = true;
+        state.apiForm.error = "";
+        if (!state.apiForm.start) state.apiForm.start = "2026-10-02T15:56";
+        if (!state.apiForm.end) state.apiForm.end = "2026-10-09T15:56";
+      }
+      render();
+    }
+
+    function readApiForm(form) {
+      const data = new FormData(form);
+      state.apiForm.start = data.get("start") || "";
+      state.apiForm.end = data.get("end") || "";
+      state.apiForm.module = data.get("module") || "";
+      state.apiForm.op = data.get("op") || "";
+      state.apiForm.sender = data.get("sender") || "";
+      state.apiForm.body = data.get("body") || "";
+      state.apiForm.response = data.get("response") || "";
+      state.apiForm.trace = data.get("trace") || "";
+      state.apiForm.exception = data.get("exception") || "";
+    }
+
+    function validateApi() {
+      if (!state.apiForm.start) return "请填写开始时间";
+      if (!state.apiForm.end) return "请填写结束时间";
+      if (state.apiForm.end < state.apiForm.start) return "结束时间要晚于开始时间";
+      return "";
+    }
+
+    document.getElementById("app").addEventListener("click", (event) => {
+      const target = event.target.closest("[data-act]");
+      if (!target) return;
+      const act = target.dataset.act;
+      if (act === "more") {
+        state.morePlan = state.morePlan === target.dataset.plan ? "" : target.dataset.plan;
+        render();
+        return;
+      }
+      if (act === "check") {
+        state.checked[target.dataset.plan] = target.checked;
+        return;
+      }
+      if (act === "route" || act === "bom" || act === "detail" || act === "oplog" || act === "apilog") {
+        openOrder(target.dataset.plan, act === "detail" ? "detail" : act);
+        return;
+      }
+      if (act === "back-list") {
+        state.scene = "list";
+        state.opDetail = null;
+        state.apiModal = null;
+        state.notice = "";
+        render();
+        return;
+      }
+      if (act === "hold" || act === "toolbar") {
+        const selected = Object.values(state.checked).some(Boolean);
+        if (["关闭", "开启", "批量编辑", "勾选导出"].includes(target.dataset.name) && !selected) {
+          state.notice = "请先勾选生产订单。";
+        } else {
+          state.notice = target.dataset.name + "不在本次整合范围，按钮保留为现有界面对照，没有连接正式操作。";
+        }
+        render();
+        return;
+      }
+      if (act === "toggle-filter") {
+        state.listOpen = !state.listOpen;
+        render();
+        return;
+      }
+      if (act === "list-reset") {
+        state.listPlan = "";
+        state.listError = "";
+        state.page = 1;
+        render();
+        return;
+      }
+      if (act === "page") {
+        state.page = Number(target.dataset.page);
+        render();
+        return;
+      }
+      if (act === "sync") {
+        state.synced = true;
+        apiLogs.unshift(api("sync-" + Date.now(), state.planNo, "2026-10-09 15:50:00", "计划工单", "样本同步", "/api/sample/sap/shoporder/sync", "120"));
+        state.notice = "";
+        render();
+        return;
+      }
+      if (act === "tab") {
+        state.tab = target.dataset.tab;
+        render();
+        return;
+      }
+      if (act === "op-detail") {
+        state.opDetail = target.dataset.id;
+        render();
+        return;
+      }
+      if (act === "op-back") {
+        state.opDetail = null;
+        render();
+        return;
+      }
+      if (act === "api-view") {
+        state.apiModal = target.dataset.id;
+        state.apiPretty = false;
+        render();
+        return;
+      }
+      if (act === "modal-close") {
+        state.apiModal = null;
+        render();
+        return;
+      }
+      if (act === "json") {
+        state.apiPretty = !state.apiPretty;
+        render();
+        return;
+      }
+      if (act === "api-collapse") {
+        state.apiForm.collapsed = !state.apiForm.collapsed;
+        render();
+        return;
+      }
+      if (act === "api-reset") {
+        const body = state.apiForm.body;
+        state.apiForm = initialApiForm();
+        state.apiForm.body = "";
+        state.notice = body ? "" : "";
+        render();
+        return;
+      }
+      if (act === "api-refresh") {
+        state.apiForm.error = validateApi();
+        state.apiForm.searched = !state.apiForm.error;
+        render();
+        return;
+      }
+      if (act === "finish-loading") {
+        state.mode = "success";
+        render();
+        return;
+      }
+      if (act === "retry") {
+        state.mode = "success";
+        state.retried = true;
+        render();
+      }
+    });
+
+    document.getElementById("app").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (event.target.id === "list-form") {
+        const value = new FormData(event.target).get("plan") || "";
+        if (value.trim() === "" && value.length > 0) {
+          state.listError = "请输入计划号";
+          state.listPlan = value;
+        } else {
+          state.listError = "";
+          state.listPlan = value.trim();
+          state.page = 1;
+        }
+        render();
+        return;
+      }
+      if (event.target.id === "api-form") {
+        if (!state.apiForm.collapsed) readApiForm(event.target);
+        state.apiForm.error = validateApi();
+        state.apiForm.searched = !state.apiForm.error;
+        render();
+      }
+    });
+
+    document.querySelectorAll("[data-scene]").forEach((button) => button.addEventListener("click", () => {
+      state.scene = button.dataset.scene;
+      state.opDetail = null;
+      state.apiModal = null;
+      state.notice = "";
+      render();
+    }));
+    document.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => {
+      state.mode = button.dataset.mode;
+      state.opDetail = null;
+      state.apiModal = null;
+      render();
+    }));
+    document.getElementById("reset").addEventListener("click", () => {
+      state.scene = "list";
+      state.mode = "success";
+      state.planNo = "SAMPLE-28673";
+      state.narrow = false;
+      state.retried = false;
+      state.notice = "";
+      state.tab = "base";
+      state.opDetail = null;
+      state.apiModal = null;
+      state.apiPretty = false;
+      state.listOpen = false;
+      state.listPlan = "";
+      state.listError = "";
+      state.page = 1;
+      state.checked = {};
+      state.morePlan = "";
+      state.apiForm = initialApiForm();
+      state.synced = false;
+      apiLogs = apiLogs.filter((item) => !String(item.id).startsWith("sync-"));
+      render();
+    });
+    document.getElementById("viewport").addEventListener("click", () => {
+      state.narrow = !state.narrow;
+      render();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        if (state.apiModal) state.apiModal = null;
+        else if (state.opDetail) state.opDetail = null;
+        else if (state.notice) state.notice = "";
+        else return;
+        render();
+      }
+    });
+    render();
+  </script>
+</body>
+</html>
