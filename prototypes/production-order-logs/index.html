@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>原型：生产订单日志查看</title>
+  <style>
+    :root {
+      --ink: #1c2430;
+      --muted: #5c6570;
+      --line: #d9d1c3;
+      --paper: #f6f3ed;
+      --card: #fffdf9;
+      --accent: #0f5c4c;
+      --accent-ink: #f4fffb;
+      --danger: #8d2f2f;
+      --danger-bg: #f8ecec;
+      --warn: #7a5b16;
+      --warn-bg: #f8f1dc;
+      --control: #1c2430;
+      --focus: #0b6bcb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font: 16px/1.5 "Segoe UI", "PingFang SC", "Noto Sans SC", sans-serif;
+    }
+    button, select { font: inherit; }
+    button { cursor: pointer; }
+    :focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .control {
+      background: var(--control);
+      color: #f5f7fa;
+      padding: 12px 16px 14px;
+    }
+    .control-label {
+      margin: 0 0 8px;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .control-row + .control-row { margin-top: 8px; }
+    .control button, .control .viewport {
+      border: 1px solid transparent;
+      background: #314052;
+      color: #f5f7fa;
+      border-radius: 999px;
+      padding: 6px 12px;
+    }
+    .control button[aria-pressed="true"] {
+      background: #f4f0e6;
+      color: var(--ink);
+    }
+    .shell {
+      width: min(1100px, calc(100% - 32px));
+      margin: 20px auto 40px;
+    }
+    body.narrow .shell { width: min(390px, calc(100% - 16px)); }
+    .banner, .sim, .sample-flag {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin: 0 0 12px;
+      background: var(--warn-bg);
+      color: var(--warn);
+    }
+    .sim { background: #eef4f2; color: #24584d; }
+    .sample-flag {
+      display: inline-block;
+      margin: 0 0 12px;
+      background: #fff;
+      color: var(--muted);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+    }
+    h1 { font-size: 28px; line-height: 1.25; margin: 0 0 8px; }
+    h2 { font-size: 22px; margin: 0 0 8px; }
+    p { margin: 0 0 12px; }
+    .meta { color: var(--muted); margin-bottom: 16px; }
+    .fields {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px 12px;
+      margin: 16px 0;
+    }
+    .fields dt { color: var(--muted); }
+    .fields dd { margin: 0; }
+    .actions, .row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .primary, .ghost, .danger {
+      border-radius: 10px;
+      padding: 10px 14px;
+      border: 1px solid var(--accent);
+    }
+    .primary { background: var(--accent); color: var(--accent-ink); }
+    .ghost { background: transparent; color: var(--accent); }
+    .danger { background: var(--danger-bg); color: var(--danger); border-color: #e4c4c4; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      word-break: break-word;
+    }
+    th { color: var(--muted); font-weight: 600; }
+    tbody button.rowlink {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      color: var(--accent);
+      padding: 0;
+    }
+    .state-box { padding: 28px 8px; text-align: center; }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      margin: 0 auto 12px;
+      border: 3px solid var(--line);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .retry-note {
+      background: #e7f5ef;
+      color: #0f5c4c;
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+    }
+    body.narrow table, body.narrow thead, body.narrow tbody, body.narrow tr, body.narrow th, body.narrow td {
+      display: block;
+      width: 100%;
+    }
+    body.narrow thead { display: none; }
+    body.narrow tr {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      padding: 8px;
+    }
+    body.narrow td { border: 0; padding: 4px 8px; }
+    body.narrow td::before {
+      content: attr(data-label);
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .viewport-flag { color: #d5dbe3; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header class="control" aria-label="原型控制条">
+    <p class="control-label">原型控制条，不是正式功能</p>
+    <div class="control-row" role="group" aria-label="场景切换">
+      <button type="button" id="scene-entry" data-scene="entry">订单入口</button>
+      <button type="button" id="scene-operation" data-scene="operation">操作日志</button>
+      <button type="button" id="scene-sync" data-scene="sync">同步日志</button>
+    </div>
+    <div class="control-row" role="group" aria-label="状态切换">
+      <button type="button" data-mode="empty">空</button>
+      <button type="button" data-mode="loading">加载</button>
+      <button type="button" data-mode="success">成功</button>
+      <button type="button" data-mode="failure">失败</button>
+      <button type="button" data-mode="forbidden">无权限</button>
+      <button type="button" data-mode="boundary">边界</button>
+    </div>
+    <div class="control-row">
+      <button type="button" id="reset">重置</button>
+      <button type="button" id="viewport" class="viewport" aria-pressed="false">窄屏</button>
+      <span id="viewport-flag" class="viewport-flag">当前为桌面</span>
+    </div>
+  </header>
+  <main class="shell" id="app" aria-live="polite"></main>
+  <script>
+    const ORDER_ID = "SAMPLE-PO-20261009-001";
+    const state = {
+      scene: "entry",
+      mode: "success",
+      panel: "list",
+      selectedId: null,
+      retried: false,
+      narrow: false
+    };
+
+    const operationSuccess = [
+      row("op-1", "2026-10-09 14:26", "样本用户甲", "更新", "样本：记录到一次更新。变更字段待确认。"),
+      row("op-2", "2026-10-09 09:03", "样本用户乙", "更新", "样本：记录到一次更新。变更字段待确认。"),
+      row("op-3", "2026-10-08 16:41", "样本用户甲", "更新", "样本：记录到一次更新。变更字段待确认。")
+    ];
+
+    const syncSuccess = [
+      sync("sy-1", "2026-10-09 14:30", "SAP", "样本：记录到一次同步。同步方向、结果、报文待确认。"),
+      sync("sy-2", "2026-10-09 14:30", "MES", "样本：记录到一次同步。同步方向、结果、报文待确认。"),
+      sync("sy-3", "2026-10-08 11:05", "MES", "样本：记录到一次同步。同步方向、结果、报文待确认。"),
+      sync("sy-4", "2026-10-08 11:02", "SAP", "样本：记录到一次同步。同步方向、结果、报文待确认。")
+    ];
+
+    function row(id, time, actor, action, note) {
+      return { id, time, actor, action, note };
+    }
+    function sync(id, time, system, note) {
+      return { id, time, system, note };
+    }
+
+    function operationBoundary() {
+      const longName = "样本用户甲-生产计划组-早班-姓名用于走查超长显示时仍要看见全名";
+      const items = [
+        row("ob-1", "2026-10-09 23:59", longName, "更新", "样本：记录到一次更新。变更字段待确认。"),
+        row("ob-2", "2026-10-09 00:00", "样本用户乙", "更新", "样本：记录到一次更新。变更字段待确认。")
+      ];
+      for (let i = 3; i <= 24; i += 1) {
+        items.push(row("ob-" + i, "2026-10-08 12:00", "样本用户丙", "更新", "样本：记录到一次更新。变更字段待确认。"));
+      }
+      return items;
+    }
+
+    function syncBoundary() {
+      const longNote = "样本：记录到一次同步。这段说明故意写得很长，用来确认系统名称和同步时间不会被挤出可视区域。同步方向、结果、报文待确认。";
+      const items = [
+        sync("sb-1", "2026-10-09 23:59", "SAP", longNote),
+        sync("sb-2", "2026-10-09 00:00", "MES", longNote)
+      ];
+      for (let i = 3; i <= 24; i += 1) {
+        items.push(sync("sb-" + i, "2026-10-08 12:00", i % 2 ? "SAP" : "MES", "样本：记录到一次同步。同步方向、结果、报文待确认。"));
+      }
+      return items;
+    }
+
+    function currentRows() {
+      if (state.mode === "boundary") {
+        return state.scene === "sync" ? syncBoundary() : operationBoundary();
+      }
+      if (state.mode !== "success") return [];
+      return state.scene === "sync" ? syncSuccess : operationSuccess;
+    }
+
+    function selectedRow() {
+      return currentRows().find((item) => item.id === state.selectedId) || null;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function render() {
+      document.body.classList.toggle("narrow", state.narrow);
+      document.querySelectorAll("[data-scene]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.scene === state.scene));
+      });
+      document.querySelectorAll("[data-mode]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode));
+      });
+      document.getElementById("viewport").setAttribute("aria-pressed", String(state.narrow));
+      document.getElementById("viewport-flag").textContent = state.narrow ? "当前为窄屏" : "当前为桌面";
+      document.getElementById("app").innerHTML = state.scene === "entry" ? entryHtml() : logHtml();
+      bind();
+    }
+
+    function entryHtml() {
+      return `
+        <p class="sample-flag">样本数据，仅供走查</p>
+        <section class="card" data-screen="entry">
+          <p class="banner">现有生产订单操作界面不在本仓库。这一屏只保留日志入口，不是现有界面的复刻。视觉为临时系统。</p>
+          <h1>生产订单</h1>
+          <p class="meta">订单号 ${ORDER_ID}（样本）</p>
+          <dl class="fields">
+            <dt>物料</dt><dd>待确认</dd>
+            <dt>数量</dt><dd>待确认</dd>
+            <dt>订单状态</dt><dd>待确认</dd>
+          </dl>
+          <div class="actions">
+            <button type="button" class="primary" id="open-operation">查看操作日志</button>
+            <button type="button" class="primary" id="open-sync">查看同步日志</button>
+          </div>
+        </section>`;
+    }
+
+    function logHtml() {
+      const syncScene = state.scene === "sync";
+      const title = syncScene ? "接口同步日志" : "操作日志";
+      const rule = syncScene
+        ? "模拟规则：SAP 与 MES 各占一行；本屏只查看；方向、结果、报文显示待确认。"
+        : "模拟规则：按时间从新到旧；同一分钟不去重；只读；变更字段显示待确认。";
+      return `
+        <p class="sample-flag">样本数据，仅供走查</p>
+        <section class="card" data-screen="${state.scene}-${state.panel}-${state.mode}">
+          <p class="sim">${rule}</p>
+          ${state.retried ? '<p class="retry-note" id="retry-banner">已重新获取样本日志</p>' : ""}
+          <h1>${title}</h1>
+          <p class="meta">生产订单 ${ORDER_ID}（样本）</p>
+          ${bodyHtml(syncScene, title)}
+        </section>`;
+    }
+
+    function bodyHtml(syncScene, title) {
+      if (state.panel === "detail" && (state.mode === "success" || state.mode === "boundary")) {
+        const item = selectedRow();
+        if (!item) return listHtml(syncScene, title);
+        if (syncScene) {
+          return `
+            <h2>同步记录</h2>
+            <dl class="fields">
+              <dt>系统</dt><dd>${escapeHtml(item.system)}</dd>
+              <dt>同步时间</dt><dd>${escapeHtml(item.time)}</dd>
+              <dt>同步方向</dt><dd>待确认</dd>
+              <dt>同步结果</dt><dd>待确认</dd>
+              <dt>报文</dt><dd>待确认</dd>
+            </dl>
+            <p>${escapeHtml(item.note)}</p>
+            <button type="button" class="ghost" id="back-list">返回列表</button>`;
+        }
+        return `
+          <h2>更新记录</h2>
+          <dl class="fields">
+            <dt>操作人</dt><dd id="detail-actor">${escapeHtml(item.actor)}</dd>
+            <dt>操作时间</dt><dd>${escapeHtml(item.time)}</dd>
+            <dt>动作</dt><dd>${escapeHtml(item.action)}</dd>
+            <dt>变更字段</dt><dd>待确认</dd>
+            <dt>变更前</dt><dd>待确认</dd>
+            <dt>变更后</dt><dd>待确认</dd>
+          </dl>
+          <p>${escapeHtml(item.note)}</p>
+          <button type="button" class="ghost" id="back-list">返回列表</button>`;
+      }
+
+      if (state.mode === "empty") {
+        const copy = syncScene ? "这张生产订单还没有同步日志" : "这张生产订单还没有操作日志";
+        return `<div class="state-box" id="empty"><p>${copy}</p><button type="button" class="ghost" id="back-order">返回订单</button></div>`;
+      }
+      if (state.mode === "loading") {
+        const copy = syncScene ? "正在加载同步日志" : "正在加载操作日志";
+        return `<div class="state-box" id="loading"><div class="spinner"></div><p>${copy}</p><button type="button" class="primary" id="finish-loading">结束加载</button></div>`;
+      }
+      if (state.mode === "failure") {
+        const copy = syncScene ? "同步日志没有加载出来" : "操作日志没有加载出来";
+        return `<div class="state-box" id="failure"><p>${copy}</p><div class="row-actions" style="justify-content:center"><button type="button" class="danger" id="retry">重试</button><button type="button" class="ghost" id="back-order">返回订单</button></div></div>`;
+      }
+      if (state.mode === "forbidden") {
+        const copy = syncScene ? "当前账号不能查看同步日志" : "当前账号不能查看操作日志";
+        return `<div class="state-box" id="forbidden"><p>${copy}</p><button type="button" class="ghost" id="back-order">返回订单</button></div>`;
+      }
+      return listHtml(syncScene, title);
+    }
+
+    function listHtml(syncScene) {
+      const items = currentRows();
+      const head = syncScene
+        ? "<tr><th>同步时间</th><th>系统</th><th>说明</th></tr>"
+        : "<tr><th>操作时间</th><th>操作人</th><th>动作</th></tr>";
+      const body = items.map((item) => {
+        if (syncScene) {
+          return `<tr>
+            <td data-label="同步时间"><button type="button" class="rowlink" data-id="${item.id}">${escapeHtml(item.time)}</button></td>
+            <td data-label="系统">${escapeHtml(item.system)}</td>
+            <td data-label="说明">${escapeHtml(item.note)}</td>
+          </tr>`;
+        }
+        return `<tr>
+          <td data-label="操作时间"><button type="button" class="rowlink" data-id="${item.id}">${escapeHtml(item.time)}</button></td>
+          <td data-label="操作人">${escapeHtml(item.actor)}</td>
+          <td data-label="动作">${escapeHtml(item.action)}</td>
+        </tr>`;
+      }).join("");
+      return `
+        <table>
+          <thead>${head}</thead>
+          <tbody id="log-list">${body}</tbody>
+        </table>
+        <div class="actions" style="margin-top:16px">
+          <button type="button" class="ghost" id="back-order">返回订单</button>
+        </div>`;
+    }
+
+    function bind() {
+      const openOperation = document.getElementById("open-operation");
+      const openSync = document.getElementById("open-sync");
+      if (openOperation) openOperation.addEventListener("click", () => openScene("operation"));
+      if (openSync) openSync.addEventListener("click", () => openScene("sync"));
+      const backOrder = document.getElementById("back-order");
+      if (backOrder) backOrder.addEventListener("click", () => openScene("entry"));
+      const backList = document.getElementById("back-list");
+      if (backList) backList.addEventListener("click", () => {
+        state.panel = "list";
+        state.selectedId = null;
+        render();
+      });
+      const finish = document.getElementById("finish-loading");
+      if (finish) finish.addEventListener("click", () => {
+        state.mode = "success";
+        state.panel = "list";
+        render();
+      });
+      const retry = document.getElementById("retry");
+      if (retry) retry.addEventListener("click", () => {
+        state.mode = "success";
+        state.retried = true;
+        state.panel = "list";
+        render();
+      });
+      document.querySelectorAll(".rowlink").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.selectedId = button.dataset.id;
+          state.panel = "detail";
+          render();
+        });
+      });
+    }
+
+    function openScene(scene) {
+      state.scene = scene;
+      state.panel = "list";
+      state.selectedId = null;
+      render();
+    }
+
+    document.querySelectorAll("[data-scene]").forEach((button) => {
+      button.addEventListener("click", () => openScene(button.dataset.scene));
+    });
+    document.querySelectorAll("[data-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.mode = button.dataset.mode;
+        state.panel = "list";
+        state.selectedId = null;
+        if (state.scene === "entry") state.scene = "operation";
+        render();
+      });
+    });
+    document.getElementById("reset").addEventListener("click", () => {
+      state.scene = "entry";
+      state.mode = "success";
+      state.panel = "list";
+      state.selectedId = null;
+      state.retried = false;
+      state.narrow = false;
+      render();
+    });
+    document.getElementById("viewport").addEventListener("click", () => {
+      state.narrow = !state.narrow;
+      render();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      if (state.panel === "detail") {
+        state.panel = "list";
+        state.selectedId = null;
+        render();
+        return;
+      }
+      if (state.scene !== "entry") openScene("entry");
+    });
+
+    render();
+  </script>
+</body>
+</html>
