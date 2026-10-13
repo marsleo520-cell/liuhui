@@ -147,6 +147,15 @@
     .pages select { width: 112px; color: var(--color-primary); border-color: var(--color-primary); }
     .page-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
     .toast { position: fixed; top: 108px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 4px; box-shadow: var(--shadow-default); padding: 8px 16px; z-index: 30; }
+    .trace-layout { display: flex; gap: 16px; align-items: stretch; }
+    .trace-side, .trace-log { background: #1b1b1b; color: #d6d6d6; border-radius: 4px; font: 12px/20px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .trace-side { width: 220px; flex: none; padding: 12px; }
+    .trace-side .svc { margin-bottom: 16px; }
+    .trace-side .svc-name { color: #8b8b8b; margin-bottom: 4px; }
+    .trace-hit { color: #ff8a80; outline: 1px solid #d54941; padding: 0 4px; }
+    .trace-log { flex: 1; min-width: 0; margin: 0; padding: 12px; white-space: pre; max-height: 560px; overflow: auto; }
+    body.narrow .trace-layout { display: block; }
+    body.narrow .trace-side { width: 100%; margin-bottom: 8px; }
     body.narrow .sider { display: none; }
     body.narrow .filterbar, body.narrow .grid-3, body.narrow .filters, body.narrow .filters.wide { display: block; }
     body.narrow .filterbar input, body.narrow .filterbar select { width: 100%; margin: 8px 0; }
@@ -168,6 +177,7 @@
       <button type="button" data-scene="detail">分支 · 订单详情</button>
       <button type="button" data-scene="oplog">分支 · 操作日志</button>
       <button type="button" data-scene="apilog">分支 · 接口日志</button>
+      <button type="button" data-scene="trace">分支 · 代码逻辑</button>
       <button type="button" data-scene="work">分支 · 工单</button>
       <button type="button" data-scene="material">分支 · 物料主数据</button>
     </div>
@@ -278,7 +288,9 @@
       hidden: {},
       checked: {},
       apiForm: initialApiForm(),
-      synced: false
+      synced: false,
+      traceId: "SAMPLE-TRACE-o1",
+      traceFrom: "oplog"
     };
 
     function order(planNo, materialNo, desc, styleNo, batch, customer, prodStatus, routeNo, bomNo, qty, workshop, warehouse, planType) {
@@ -288,9 +300,10 @@
     function bom(no, code, name, qty, unit, unitName, locked, unitQty, win, sap, rate, zero) {
       return { no, code, name, qty, unit, unitName, locked, unitQty, win, sap, rate, zero, opNo: "0010", opName: "样本工序" };
     }
-    function op(id, planNo, time, actor, fields) {
+    function op(id, planNo, time, actor, fields, trace) {
       return {
         id, planNo, time, actor, action: "更新",
+        trace: trace || ("SAMPLE-TRACE-" + id),
         fields: fields.map(([field, before, after]) => ({ field, before, after }))
       };
     }
@@ -346,14 +359,14 @@
       document.querySelectorAll("[data-mode]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode)));
       document.getElementById("viewport").setAttribute("aria-pressed", String(state.narrow));
       document.getElementById("viewport-flag").textContent = state.narrow ? "当前为窄屏" : "当前为桌面";
-      const screens = { list: listHtml, route: routeHtml, bom: bomHtml, detail: detailHtml, edit: editHtml, oplog: opHtml, apilog: apiHtml, work: workHtml, material: materialHtml };
+      const screens = { list: listHtml, route: routeHtml, bom: bomHtml, detail: detailHtml, edit: editHtml, oplog: opHtml, apilog: apiHtml, work: workHtml, material: materialHtml, trace: traceHtml };
       document.getElementById("app").innerHTML = shell(state.scene, screens[state.scene]()) + (state.apiModal ? modalHtml() : "") + splitHtml();
     }
 
     function shell(screen, inner) {
-      const titles = { list: "生产订单", route: "工艺路线", bom: "物料清单", detail: "订单详情", edit: "编辑生产订单", oplog: "操作日志", apilog: "日志管理", work: "工单", material: "物料主数据" };
+      const titles = { list: "生产订单", route: "工艺路线", bom: "物料清单", detail: "订单详情", edit: "编辑生产订单", oplog: "操作日志", apilog: "日志管理", work: "工单", material: "物料主数据", trace: "代码逻辑" };
       const title = titles[screen] || "生产订单";
-      const current = screen === "detail" || screen === "edit" ? "list" : screen;
+      const current = screen === "detail" || screen === "edit" ? "list" : screen === "trace" ? (state.traceFrom === "apilog" ? "apilog" : "oplog") : screen;
       const query = state.navQuery.trim();
       const menu = NAV.filter(([, name]) => !query || name.includes(query)).map(([id, name]) =>
         `<button type="button" data-act="menu" data-to="${id}" aria-current="${current === id ? "page" : "false"}">${name}</button>`
@@ -664,19 +677,21 @@
       const blocked = gate("这张生产订单还没有操作日志", "操作日志");
       const blocks = rows.map((line) => `<article class="section" id="op-${line.id}">
         <p><button type="button" class="link" data-act="op-detail" data-id="${line.id}">${esc(line.time)}</button> ${esc(line.actor)} ${esc(line.action)}</p>
+        <p>traceId ${traceLink(line.trace)}</p>
         <div class="table-wrap">${fieldTable(line.fields)}</div>
       </article>`).join("");
       if (state.opDetail && !blocked) {
         const line = rows.find((entry) => entry.id === state.opDetail) || rows[0];
         return `<div data-screen="oplog-detail">${banner()}${crumb("操作日志")}<h1>操作日志</h1>
           <p id="detail-actor">${esc(line.actor)} 在 ${esc(line.time)} ${esc(line.action)}了 ${line.fields.length} 个字段</p>
+          <p>traceId ${traceLink(line.trace)}</p>
           <div class="table-wrap">${fieldTable(line.fields)}</div>
           <div class="page-foot"><button type="button" class="btn" data-act="op-back">返回</button></div>
         </div>`;
       }
       return `${banner()}${crumb("操作日志")}<h1>操作日志</h1>
         <p>生产订单 ${esc(item.planNo)}（样本）</p>
-        <p class="sim">模拟规则：一条日志是一次更新。同一次改了多个字段时，字段、变更前、变更后列在这一条下面。</p>
+        <p class="sim">模拟规则：一条日志是一次更新。同一次改了多个字段时，字段、变更前、变更后列在这一条下面。traceId 可点开这条更新的样本执行记录。</p>
         ${blocked || (blocks ? `<div id="op-list">${blocks}</div>` : '<div class="state" id="op-empty"><div class="empty-art"></div><p>这张生产订单还没有操作日志</p></div>')}
         ${pageFoot()}`;
     }
@@ -722,7 +737,7 @@
           <td data-label="模块">${esc(line.module)}</td>
           <td data-label="具体操作">${esc(line.action)}</td>
           <td data-label="目标 url">${esc(line.target)}</td>
-          <td data-label="traceId">${esc(line.trace)}</td>
+          <td data-label="traceId">${traceLink(line.trace)}</td>
           <td data-label="异常信息">${esc(line.exception)}</td>
           <td data-label="操作"><button type="button" class="link" data-act="api-view" data-id="${line.id}">查看</button></td>
         </tr>`).join("")}</tbody></table></div>` : '<div class="state" id="api-empty"><p>没有符合条件的接口日志</p></div>';
@@ -732,7 +747,7 @@
         <label class="req"><span>结束时间</span><input id="api-end" type="datetime-local" name="end" value="${esc(form.end)}"></label>
         <label><span>请求体</span><input id="api-body" name="body" value="${esc(form.body)}" placeholder="请输入计划号"></label>` : fields;
       return `${banner()}${crumb("日志管理")}<h1>日志管理</h1>
-        <p class="sim">模拟规则：从订单进入时，把计划号填进请求体。地址、IP、traceId 都是样本，不发起请求。开始时间和结束时间必填。重置清空条件，已输入内容不保留。</p>
+        <p class="sim">模拟规则：从订单进入时，把计划号填进请求体。地址、IP、traceId 都是样本，不发起请求。点击 traceId 查看这条接口调用的样本执行记录。开始时间和结束时间必填。重置清空条件，已输入内容不保留。</p>
         <div class="toolbar"><button type="button" class="btn-green" data-act="api-refresh">刷新</button></div>
         <form id="api-form" class="filters wide">${visible}
           <div class="dialog-actions">
@@ -771,7 +786,7 @@
         <div class="dialog-head"><h1 id="modal-title">查看详情</h1><button type="button" class="btn" data-act="modal-close">关闭</button></div>
         <div class="grid-3">
           ${readonly("模块", line.module)}${readonly("具体操作", line.action)}${readonly("URL", line.url)}
-          ${readonly("IP", line.ip)}${readonly("traceId", line.trace)}${readonly("异常信息", line.exception)}
+          ${readonly("IP", line.ip)}<div class="kv"><span>traceId</span><b>${traceLink(line.trace)}</b></div>${readonly("异常信息", line.exception)}
         </div>
         <label class="form-row"><span>请求头</span><textarea readonly>${esc(line.head)}</textarea></label>
         <label class="form-row"><span>请求体</span><textarea readonly>${esc(line.body)}</textarea></label>
@@ -779,6 +794,59 @@
         ${pretty}
         <div class="dialog-actions"><button type="button" class="btn" data-act="modal-close">取消</button><button type="button" class="btn-green" data-act="json">JSON预览</button></div>
       </div></div>`;
+    }
+
+    function traceLink(trace) {
+      return `<button type="button" class="link" data-act="open-trace" data-trace="${esc(trace)}">${esc(trace)}</button>`;
+    }
+
+    function traceBundle(traceId) {
+      const opLine = opLogs.find((line) => line.trace === traceId);
+      const apiLine = apiLogs.find((line) => line.trace === traceId);
+      const planNo = (opLine && opLine.planNo) || (apiLine && apiLine.planNo) || currentOrder().planNo;
+      const stamp = (opLine && opLine.time) || (apiLine && apiLine.time) || "2026-10-09 14:26";
+      const path = apiLine ? apiLine.url : "/api/sample/order/update";
+      const summary = opLine
+        ? "写入字段 " + opLine.fields.map((item) => item.field + " " + item.before + " -> " + item.after).join("，")
+        : (apiLine ? apiLine.action : "查询执行记录");
+      const services = apiLine ? ["sample-gateway", "sample-interface-service"] : ["sample-order-service", "sample-gateway"];
+      const lines = [
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.102 [info] [message] 样本：进入处理 " + planNo,
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.128 [info] [message] Preparing: SELECT plan_no, qty, priority, warehouse FROM sample_order WHERE plan_no = ?",
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.141 [info] [message] Parameters: " + planNo + "(String)",
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.166 [info] [message] Total: 1",
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.210 [info] [message] 样本：" + summary,
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.248 [info] [message] Request PATH: " + path + ", Consumed: " + (apiLine ? apiLine.cost : "146") + "ms, Result: {\"code\":200,\"message\":\"样本：执行成功\",\"success\":true}",
+        "[样本-10.0.0.11:8080] [" + traceId + "] [sample-gateway-01] " + stamp + ":01.260 [info] [message] gateway request path: " + path + ", 状态: 200",
+        "at sample.order.SampleOrderService.apply(SampleOrderService.java:26)",
+        "at sample.order.SampleOrderController.update(SampleOrderController.java:18)",
+        "at sample.gateway.SampleGatewayFilter.doFilter(SampleGatewayFilter.java:12)"
+      ];
+      if (state.mode === "boundary") {
+        lines.unshift("[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] 2026-10-09 00:00:00.001 [info] [message] 样本：午夜边界开始");
+        lines.push("[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] 2026-10-09 23:59:59.999 [info] [message] 样本边界：这条执行说明故意写得很长，用来确认同一条 traceId 在订单服务和网关日志里都能完整看见");
+      }
+      return { services, lines, shown: state.mode === "boundary" ? traceId + "-EDGE-超长" : traceId };
+    }
+
+    function paintTrace(line, traceId) {
+      const token = esc(traceId);
+      return esc(line).split(token).join('<span class="trace-hit">' + token + "</span>");
+    }
+
+    function traceHtml() {
+      const traceId = state.traceId || "SAMPLE-TRACE-o1";
+      const bundle = traceBundle(traceId);
+      const fromLabel = state.traceFrom === "apilog" ? "日志管理" : "操作日志";
+      const blocked = gate("这条 traceId 没有样本执行记录", "代码逻辑");
+      return `${banner()}<p class="crumb"><button type="button" data-act="back-list">生产订单</button> / <button type="button" data-act="trace-back">${fromLabel}</button> / 代码逻辑</p><h1>代码逻辑</h1>
+        <p class="sim">模拟规则：点击 traceId 后，按调用链把订单服务和网关的样本日志排在一起。日志区只用样本地址、样本语句和样本类名，不连接真实后台。</p>
+        <p id="trace-current">当前 traceId ${esc(bundle.shown)}</p>
+        <div class="trace-layout" id="trace-view">
+          <aside class="trace-side">${bundle.services.map((name) => `<div class="svc"><div class="svc-name">${esc(name)}</div><div class="trace-hit">${esc(bundle.shown)}</div></div>`).join("")}</aside>
+          ${blocked || `<div class="trace-log" id="trace-log">${bundle.lines.map((line) => paintTrace(line, traceId)).join("\n")}</div>`}
+        </div>
+        <div class="page-foot"><button type="button" class="btn" data-act="trace-back">返回</button></div>`;
     }
 
     function readonly(label, value, wide) {
@@ -789,6 +857,15 @@
     }
     function linkField(label, value, act, plan) {
       return `<label class="req">${label}<button type="button" class="link" data-act="${act}" data-plan="${plan}">${esc(value)}</button></label>`;
+    }
+
+    function openTrace(trace, from) {
+      state.traceId = trace || "SAMPLE-TRACE-o1";
+      state.traceFrom = from && from !== "trace" ? from : (state.traceFrom || "oplog");
+      state.scene = "trace";
+      state.apiModal = null;
+      state.notice = "";
+      render();
     }
 
     function openOrder(plan, scene) {
@@ -845,6 +922,8 @@
         if (to === "list") {
           state.scene = "list";
           render();
+        } else if (to === "trace") {
+          openTrace(state.traceId || "SAMPLE-TRACE-o1", state.traceFrom || "oplog");
         } else {
           openOrder(state.planNo, to);
         }
@@ -977,6 +1056,15 @@
       }
       if (act === "op-back") {
         state.opDetail = null;
+        render();
+        return;
+      }
+      if (act === "open-trace") {
+        openTrace(target.dataset.trace, state.scene === "trace" ? state.traceFrom : state.scene);
+        return;
+      }
+      if (act === "trace-back") {
+        state.scene = state.traceFrom === "trace" ? "oplog" : (state.traceFrom || "oplog");
         render();
         return;
       }
@@ -1127,6 +1215,7 @@
       state.opDetail = null;
       state.apiModal = null;
       state.notice = "";
+      if (state.scene === "trace" && !state.traceId) state.traceId = "SAMPLE-TRACE-o1";
       render();
     }));
     document.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => {
@@ -1165,6 +1254,8 @@
       state.hidden = {};
       state.apiForm = initialApiForm();
       state.synced = false;
+      state.traceId = "SAMPLE-TRACE-o1";
+      state.traceFrom = "oplog";
       opLogs = seedOps();
       orders.forEach((item) => {
         if (item.planNo === "SAMPLE-28673") {
@@ -1191,6 +1282,7 @@
         else if (state.opDetail) state.opDetail = null;
         else if (state.toolMore) state.toolMore = false;
         else if (state.morePlan) { state.morePlan = ""; state.deletePlan = ""; }
+        else if (state.scene === "trace") state.scene = state.traceFrom || "oplog";
         else if (state.notice) state.notice = "";
         else return;
         render();
