@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>原型：生产订单整合</title>
+  <style>
+    :root {
+      --color-primary: #009090;
+      --color-primary-hover: #209E9E;
+      --color-primary-active: #007A7A;
+      --color-primary-light: #E7F6F6;
+      --color-success: #00AC97;
+      --color-success-light: #E8FFF8;
+      --color-warning: #E37318;
+      --color-warning-light: #FFF6E8;
+      --color-danger: #D54941;
+      --color-danger-light: #FFEDE8;
+      --text-title: #181818;
+      --text-regular: #4B4B4B;
+      --text-secondary: #8B8B8B;
+      --bg-page: #F5F6F7;
+      --bg-card: #FFFFFF;
+      --bg-muted: #F3F3F3;
+      --border: #DCDCDC;
+      --mask: rgba(0, 0, 0, 0.5);
+      --shadow-base: 0 0 6px rgba(0, 0, 0, 0.1);
+      --shadow-default: 0 0 12px rgba(0, 0, 0, 0.2);
+      --ink: var(--text-title);
+      --muted: var(--text-secondary);
+      --line: var(--border);
+      --bg: var(--bg-page);
+      --card: var(--bg-card);
+      --green: var(--color-primary);
+      --danger: var(--color-danger);
+      --focus: var(--color-primary);
+      --yellow: #FFF6E8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text-regular); background: var(--bg-page); font: 14px/22px "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .control { background: #181818; color: #fff; padding: 8px 16px 12px; }
+    .control p { margin: 0 0 8px; font-size: 12px; line-height: 20px; }
+    .control-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .control-row + .control-row { margin-top: 8px; }
+    .control button { border: 0; background: #4B4B4B; color: #fff; border-radius: 999px; padding: 4px 12px; }
+    .control button[aria-pressed="true"] { background: #fff; color: #181818; }
+    .flag { color: #DCDCDC; font-size: 12px; line-height: 20px; }
+    #app { min-height: calc(100vh - 92px); }
+    .frame { display: flex; min-height: calc(100vh - 92px); background: var(--bg-page); }
+    .sider { width: 232px; flex: none; background: #fff; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; color: var(--color-primary); font-weight: 700; }
+    .brand i { width: 24px; height: 24px; border-radius: 4px; background: var(--color-primary); display: inline-block; }
+    .nav-search { margin: 0 16px 8px; }
+    .menu { padding: 8px; }
+    .menu button { display: flex; width: 100%; text-align: left; border: 0; background: transparent; border-radius: 4px; padding: 8px 12px; color: var(--text-regular); white-space: nowrap; }
+    .menu button[aria-current="page"] { background: var(--bg-muted); color: var(--text-title); font-weight: 700; }
+    .menu button:hover { background: var(--bg-muted); }
+    .fav { margin-top: auto; padding: 16px; }
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .navtabs { height: 48px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; padding: 0 16px; }
+    .navtabs button.tab { border: 0; background: var(--bg-muted); border-radius: 4px; padding: 4px 8px; color: var(--text-regular); }
+    .navtabs button.tab[aria-current="page"] { background: var(--color-primary-light); color: var(--color-primary); }
+    .navtabs .x { border: 0; background: transparent; color: var(--text-secondary); padding: 0 4px; }
+    .nav-tools { margin-left: auto; display: flex; gap: 12px; color: var(--text-secondary); }
+    .content { padding: 16px; }
+    .panel { background: #fff; border-radius: 4px; padding: 16px; }
+    .sample { display: inline-block; margin: 0 0 8px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); background: #fff; font-size: 12px; line-height: 20px; }
+    h1 { font-size: 20px; line-height: 28px; margin: 0 0 16px; color: var(--text-title); font-weight: 700; }
+    .crumb { margin: 0 0 16px; color: var(--text-secondary); }
+    .crumb button { border: 0; background: transparent; color: var(--text-regular); padding: 0; }
+    .filterbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+    .filterbar .grow { display: flex; gap: 12px; flex: 1; flex-wrap: wrap; }
+    .filterbar label { display: flex; align-items: center; gap: 8px; color: var(--text-regular); white-space: nowrap; }
+    .filterbar input, .filterbar select { width: 180px; }
+    .toolbar, .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .toolbar { margin-bottom: 12px; }
+    .btn, .btn-green, .btn-line { border-radius: 4px; padding: 5px 16px; border: 1px solid var(--border); background: #fff; color: var(--text-title); line-height: 22px; }
+    .btn:hover, .btn-line:hover { background: var(--bg-muted); }
+    .btn-green { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .btn-green:hover { background: var(--color-primary-hover); }
+    .link { border: 0; background: transparent; color: var(--color-primary); padding: 0 8px; }
+    .link.danger { color: var(--color-danger); }
+    .tag { display: inline-block; border-radius: 4px; padding: 0 8px; line-height: 22px; background: var(--bg-muted); color: var(--text-regular); }
+    .tag.green { background: var(--color-success-light); color: var(--color-success); }
+    .tag.orange { background: var(--color-warning-light); color: var(--color-warning); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { border: 1px solid var(--border); padding: 12px 16px; text-align: left; vertical-align: middle; white-space: nowrap; }
+    th { background: var(--bg-muted); color: var(--text-title); font-weight: 700; }
+    .more-row td { background: #fff; white-space: normal; }
+    .drop, .menu-pop { display: flex; flex-direction: column; width: 180px; min-width: 160px; background: #fff; border: 1px solid var(--border); border-radius: 4px; box-shadow: var(--shadow-base); }
+    .drop button, .menu-pop button { border: 0; background: #fff; padding: 8px 16px; text-align: left; color: var(--text-regular); }
+    .drop button:hover, .menu-pop button:hover { background: var(--bg-muted); }
+    .pop { position: relative; display: inline-block; }
+    .menu-pop { position: absolute; top: 36px; left: 0; z-index: 6; }
+    .filter-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+    .kv { display: flex; align-items: flex-start; gap: 8px; min-height: 32px; }
+    .kv > span { width: 112px; text-align: right; color: var(--text-regular); flex: none; }
+    .kv > b { font-weight: 400; color: var(--text-title); }
+    .kv.req > span::before { content: "*"; color: var(--color-danger); margin-right: 4px; }
+    .btn-danger { background: var(--color-danger); color: #fff; border-color: var(--color-danger); }
+    .btn-danger:hover { background: #c63b35; }
+    .crumb button:hover { color: var(--color-primary); }
+    .nav-hint { margin: 0 16px 8px; color: var(--color-danger); font-size: 12px; line-height: 20px; }
+    .fav button { border: 0; background: transparent; color: var(--text-regular); padding: 0; }
+    .notice, .sim, .error, .ok { border-radius: 4px; padding: 8px 16px; margin: 0 0 16px; }
+    .notice { background: var(--color-warning-light); color: var(--text-title); }
+    .sim { background: var(--color-primary-light); color: var(--text-title); }
+    .error { background: var(--color-danger-light); color: var(--text-title); }
+    .ok { background: var(--color-success-light); color: var(--text-title); }
+    .filters { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
+    .filters.wide { grid-template-columns: 1fr 1fr; }
+    .filters label, .form-row { display: flex; align-items: center; gap: 8px; }
+    .filters label input, .filters label select, .filters label textarea, .form-row textarea { flex: 1; width: auto; max-width: 360px; }
+    .filters label span, .form-row span { width: 96px; text-align: right; color: var(--text-regular); flex: none; }
+    .req > span::before { content: "*"; color: var(--color-danger); margin-right: 4px; }
+    input, select, textarea { border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; background: #fff; width: 100%; }
+    input:focus, select:focus, textarea:focus { border-color: var(--color-primary); outline: none; }
+    textarea { min-height: 72px; resize: vertical; }
+    input[readonly], textarea[readonly] { background: var(--bg-muted); }
+    .fill[readonly] { background: #fff; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+    .span-2 { grid-column: span 2; }
+    .section { margin-top: 24px; }
+    .tabs { display: flex; gap: 0; margin: 16px 0; border-bottom: 1px solid var(--border); }
+    .tabs button { border: 0; background: transparent; padding: 8px 16px; color: var(--text-regular); }
+    .tabs button[aria-pressed="true"] { color: var(--color-primary); box-shadow: inset 0 -2px 0 var(--color-primary); }
+    .state { text-align: center; padding: 48px 16px; color: var(--text-secondary); }
+    .empty-art { width: 80px; height: 48px; margin: 0 auto 8px; border-radius: 40px 40px 8px 8px; background: linear-gradient(#F3F3F3, #E7F6F6); }
+    .skeleton { height: 16px; margin: 12px 0; border-radius: 4px; background: linear-gradient(90deg, #F3F3F3, #E7F6F6, #F3F3F3); }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--color-primary); border-radius: 50%; display: inline-block; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .sap-zero { background: var(--color-warning-light); }
+    .mask { position: fixed; inset: 0; background: var(--mask); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 20; }
+    .dialog { width: min(800px, 100%); max-height: calc(100vh - 80px); overflow: auto; background: #fff; border-radius: 6px; padding: 32px; box-shadow: var(--shadow-default); }
+    .dialog.sm { width: min(512px, 100%); }
+    .dialog.xs { width: min(416px, 100%); }
+    .dialog-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+    .pop .bubble { position: absolute; z-index: 5; left: 0; top: 36px; width: 240px; background: #fff; border-radius: 6px; box-shadow: var(--shadow-default); padding: 16px; white-space: normal; }
+    .pager { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 16px; color: var(--text-regular); }
+    .pages { display: flex; gap: 8px; align-items: center; }
+    .pages button[aria-current="page"] { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .pages select { width: 112px; color: var(--color-primary); border-color: var(--color-primary); }
+    .page-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+    .toast { position: fixed; top: 108px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 4px; box-shadow: var(--shadow-default); padding: 8px 16px; z-index: 30; }
+    .trace-layout { display: flex; gap: 16px; align-items: stretch; }
+    .trace-side, .trace-log { background: #1b1b1b; color: #d6d6d6; border-radius: 4px; font: 12px/20px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .trace-side { width: 220px; flex: none; padding: 12px; }
+    .trace-side .svc { margin-bottom: 16px; }
+    .trace-side .svc-name { color: #8b8b8b; margin-bottom: 4px; }
+    .trace-hit { color: #ff8a80; outline: 1px solid #d54941; padding: 0 4px; }
+    .trace-log { flex: 1; min-width: 0; margin: 0; padding: 12px; white-space: pre; max-height: 560px; overflow: auto; }
+    body.narrow .trace-layout { display: block; }
+    body.narrow .trace-side { width: 100%; margin-bottom: 8px; }
+    body.narrow .sider { display: none; }
+    body.narrow .filterbar, body.narrow .grid-3, body.narrow .filters, body.narrow .filters.wide { display: block; }
+    body.narrow .filterbar input, body.narrow .filterbar select { width: 100%; margin: 8px 0; }
+    body.narrow .span-2 { grid-column: auto; }
+    body.narrow table, body.narrow thead, body.narrow tbody, body.narrow tr, body.narrow th, body.narrow td { display: block; width: 100%; }
+    body.narrow thead { display: none; }
+    body.narrow tr { border: 1px solid var(--border); border-radius: 4px; margin-bottom: 8px; }
+    body.narrow td { border: 0; white-space: normal; }
+    body.narrow td::before { content: attr(data-label); display: block; color: var(--text-secondary); font-size: 12px; line-height: 20px; }
+  </style>
+</head>
+<body>
+  <header class="control" aria-label="原型控制条">
+    <p>原型控制条，不是正式功能</p>
+    <div class="control-row" role="group" aria-label="场景切换">
+      <button type="button" data-scene="list">主路径 · 订单列表</button>
+      <button type="button" data-scene="route">分支 · 工艺路线</button>
+      <button type="button" data-scene="bom">分支 · 物料清单</button>
+      <button type="button" data-scene="detail">分支 · 订单详情</button>
+      <button type="button" data-scene="oplog">分支 · 操作日志</button>
+      <button type="button" data-scene="apilog">分支 · 接口日志</button>
+      <button type="button" data-scene="trace">分支 · 代码逻辑</button>
+      <button type="button" data-scene="work">分支 · 工单</button>
+      <button type="button" data-scene="material">分支 · 物料主数据</button>
+    </div>
+    <div class="control-row" role="group" aria-label="状态切换">
+      <button type="button" data-mode="empty">空</button>
+      <button type="button" data-mode="loading">加载</button>
+      <button type="button" data-mode="success">成功</button>
+      <button type="button" data-mode="failure">失败</button>
+      <button type="button" data-mode="forbidden">无权限</button>
+      <button type="button" data-mode="boundary">边界</button>
+    </div>
+    <div class="control-row">
+      <button type="button" id="reset">重置</button>
+      <button type="button" id="viewport" aria-pressed="false">窄屏</button>
+      <span id="viewport-flag" class="flag">当前为桌面</span>
+    </div>
+  </header>
+  <main id="app" aria-live="polite"></main>
+  <script>
+    const orders = [
+      order("SAMPLE-28673", "SAMPLE-MAT-3350-01", "样本物料-灭菌顶头袋", "", "SAMPLE-1008U", "样本客户甲", "完工", "SAMPLE-ROUTE-464", "SAMPLE-BOM-3350-01", "104", "样本车间", "样本仓", "样本/量产订单"),
+      order("SAMPLE-17850", "SAMPLE-MAT-15588", "样本物料-灭菌头袋", "", "SAMPLE-0928U", "样本客户乙", "完工", "SAMPLE-ROUTE-465", "SAMPLE-BOM-15588", "80", "样本车间", "样本仓", "样本/量产订单"),
+      order("SAMPLE-97865", "SAMPLE-MAT-3450-02", "样本物料-介入包", "SAMPLE-STYLE-02", "SAMPLE-1007U", "样本客户丙", "已开工", "SAMPLE-ROUTE-466", "SAMPLE-BOM-3450-02", "56", "样本车间", "样本仓", "样本/量产订单")
+    ];
+
+    const processes = {
+      "SAMPLE-28673": [step("0010", "样本工序-包装工作中心", "SAMPLE-OP-210", "104")],
+      "SAMPLE-17850": [step("0010", "样本工序-包装工作中心", "SAMPLE-OP-211", "80")],
+      "SAMPLE-97865": [step("0010", "样本工序-包装工作中心", "SAMPLE-OP-212", "56")]
+    };
+
+    const boms = {
+      "SAMPLE-28673": [
+        bom("0001", "SAMPLE-ITEM-0103", "样本组件-包装袋", "13.000", "PC", "件", "0", "0.125", "13", "13", "100%", false),
+        bom("0002", "SAMPLE-ITEM-0133", "样本组件-灭菌包", "117.000", "EA", "个", "117", "1.125", "13", "0", "100%", true),
+        bom("0003", "SAMPLE-ITEM-8375", "样本组件-合格证", "13.000", "E17", "张", "0", "0.125", "13", "13", "100%", false)
+      ],
+      "SAMPLE-17850": [bom("0001", "SAMPLE-ITEM-1001", "样本组件-袋体", "80.000", "PC", "件", "0", "1", "80", "80", "100%", false)],
+      "SAMPLE-97865": [bom("0001", "SAMPLE-ITEM-2002", "样本组件-介入包材", "56.000", "PC", "件", "0", "1", "56", "0", "100%", true)]
+    };
+
+    function seedOps() {
+      return [
+        op("o1", "SAMPLE-28673", "2026-10-09 14:26", "样本用户甲", [
+          ["数量", "100", "104"],
+          ["优先级", "2/3", "3/3"],
+          ["仓库", "样本仓甲", "样本仓"]
+        ]),
+        op("o2", "SAMPLE-28673", "2026-10-09 09:03", "样本用户乙", [
+          ["生产批号", "SAMPLE-1007U", "SAMPLE-1008U"],
+          ["备注", "空", "样本备注"]
+        ]),
+        op("o3", "SAMPLE-17850", "2026-10-08 16:41", "样本用户甲", [
+          ["计划状态", "关闭", "开启"],
+          ["客户", "样本客户甲", "样本客户乙"]
+        ])
+      ];
+    }
+    let opLogs = seedOps();
+
+    let apiLogs = [
+      api("a1", "SAMPLE-28673", "2026-10-09 15:53:21", "计划工单", "SAP推送订单数据", "/api/sample/sap/shoporder/sync", "1100"),
+      api("a2", "SAMPLE-28673", "2026-10-09 14:30:00", "生产入库", "sap线边入库", "/api/sample/mes/warehouse/in", "860"),
+      api("a3", "SAMPLE-17850", "2026-10-08 11:02:00", "报工模块", "sap同步报工", "/api/sample/mes/report/sync", "48")
+    ];
+
+    const initialApiForm = () => ({
+      start: "2026-10-02T15:56",
+      end: "2026-10-09T15:56",
+      module: "",
+      op: "",
+      sender: "",
+      body: "",
+      response: "",
+      trace: "",
+      exception: "",
+      collapsed: false,
+      error: "",
+      searched: false
+    });
+
+    const state = {
+      scene: "list",
+      mode: "success",
+      planNo: "SAMPLE-28673",
+      narrow: false,
+      retried: false,
+      notice: "",
+      tab: "base",
+      opDetail: null,
+      apiModal: null,
+      apiPretty: false,
+      listOpen: false,
+      listMore: false,
+      listPlan: "",
+      listMaterial: "",
+      listError: "",
+      toolMore: false,
+      navQuery: "",
+      navHint: "",
+      page: 1,
+      pageSize: 20,
+      morePlan: "",
+      editError: "",
+      splitPlan: "",
+      splitError: "",
+      deletePlan: "",
+      hidden: {},
+      checked: {},
+      apiForm: initialApiForm(),
+      synced: false,
+      traceId: "SAMPLE-TRACE-o1",
+      traceFrom: "oplog"
+    };
+
+    function order(planNo, materialNo, desc, styleNo, batch, customer, prodStatus, routeNo, bomNo, qty, workshop, warehouse, planType) {
+      return { planNo, materialNo, desc, styleNo, batch, customer, publish: "已发布", planStatus: "开启", prodStatus, routeNo, bomNo, qty, unit: "包", version: "1", workshop, warehouse, planType, priority: "3/3", remark: planNo === "SAMPLE-28673" ? "样本备注" : "", start: "2026-10-09 00:00:00", end: "2026-10-14 00:00:00", expire: "2028-10-07", manager: "样本管理者", color: "样本颜色", size: "样本尺码" };
+    }
+    function step(no, name, code, qty) { return { no, name, code, qty, unit: "包" }; }
+    function bom(no, code, name, qty, unit, unitName, locked, unitQty, win, sap, rate, zero) {
+      return { no, code, name, qty, unit, unitName, locked, unitQty, win, sap, rate, zero, opNo: "0010", opName: "样本工序" };
+    }
+    function op(id, planNo, time, actor, fields, trace) {
+      return {
+        id, planNo, time, actor, action: "更新",
+        trace: trace || ("SAMPLE-TRACE-" + id),
+        fields: fields.map(([field, before, after]) => ({ field, before, after }))
+      };
+    }
+    function api(id, planNo, time, module, action, url, cost) {
+      return {
+        id, planNo, time, module, action, url, cost,
+        ip: "样本-10.0.0.21", status: "200", target: "样本目标地址", trace: "SAMPLE-TRACE-" + id,
+        exception: "无",
+        head: '{"sample":true,"source":"原型"}',
+        body: '{"sample":true,"planNo":"' + planNo + '"}',
+        resp: '{"code":200,"message":"样本：请求成功","success":true}'
+      };
+    }
+
+    function currentOrder() {
+      return orders.find((item) => item.planNo === state.planNo) || orders[0];
+    }
+
+    function boundaryOrders() {
+      const longDesc = "样本物料-名称用于走查超长显示时仍要看见计划号、工艺路线号和BOM号";
+      return [order("SAMPLE-EDGE-2359", "SAMPLE-MAT-EDGE", longDesc, "SAMPLE-STYLE-LONG", "SAMPLE-2359U", "样本客户-名称超长用于边界走查", "完工", "SAMPLE-ROUTE-2359", "SAMPLE-BOM-EDGE", "1", "样本车间", "样本仓-名称超长", "样本/量产订单")]
+        .concat(Array.from({ length: 11 }, (_, index) => order("SAMPLE-EDGE-" + (index + 2), "SAMPLE-MAT-" + index, "样本物料", "", "SAMPLE-0000U", "样本客户", "已开工", "SAMPLE-ROUTE-" + index, "SAMPLE-BOM-" + index, "1", "样本车间", "样本仓", "样本/量产订单")));
+    }
+
+    function listRows() {
+      if (["empty", "loading", "failure", "forbidden"].includes(state.mode)) return [];
+      const source = (state.mode === "boundary" ? boundaryOrders() : orders).filter((item) => !state.hidden[item.planNo]);
+      const keyword = state.listPlan.trim();
+      const material = state.listMaterial.trim();
+      let filtered = keyword ? source.filter((item) => item.planNo.includes(keyword)) : source;
+      if (material) filtered = filtered.filter((item) => item.materialNo.includes(material));
+      const start = (state.page - 1) * state.pageSize;
+      return { all: filtered, page: filtered.slice(start, start + state.pageSize) };
+    }
+
+    function esc(value) {
+      return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+    }
+
+    const NAV = [
+      ["list", "生产订单"],
+      ["route", "工艺路线"],
+      ["bom", "物料清单"],
+      ["oplog", "操作日志"],
+      ["apilog", "接口日志"],
+      ["work", "工单"],
+      ["material", "物料主数据"]
+    ];
+
+    function render() {
+      document.body.classList.toggle("narrow", state.narrow);
+      document.querySelectorAll("[data-scene]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.scene === state.scene)));
+      document.querySelectorAll("[data-mode]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.mode === state.mode)));
+      document.getElementById("viewport").setAttribute("aria-pressed", String(state.narrow));
+      document.getElementById("viewport-flag").textContent = state.narrow ? "当前为窄屏" : "当前为桌面";
+      const screens = { list: listHtml, route: routeHtml, bom: bomHtml, detail: detailHtml, edit: editHtml, oplog: opHtml, apilog: apiHtml, work: workHtml, material: materialHtml, trace: traceHtml };
+      document.getElementById("app").innerHTML = shell(state.scene, screens[state.scene]()) + (state.apiModal ? modalHtml() : "") + splitHtml();
+    }
+
+    function shell(screen, inner) {
+      const titles = { list: "生产订单", route: "工艺路线", bom: "物料清单", detail: "订单详情", edit: "编辑生产订单", oplog: "操作日志", apilog: "日志管理", work: "工单", material: "物料主数据", trace: "代码逻辑" };
+      const title = titles[screen] || "生产订单";
+      const current = screen === "detail" || screen === "edit" ? "list" : screen === "trace" ? (state.traceFrom === "apilog" ? "apilog" : "oplog") : screen;
+      const query = state.navQuery.trim();
+      const menu = NAV.filter(([, name]) => !query || name.includes(query)).map(([id, name]) =>
+        `<button type="button" data-act="menu" data-to="${id}" aria-current="${current === id ? "page" : "false"}">${name}</button>`
+      ).join("") || `<p class="nav-hint">没有匹配的菜单</p>`;
+      const tab = screen === "list" ? "" : `<button type="button" class="tab" aria-current="page">${esc(title)}</button><button type="button" class="x" data-act="close-tab" aria-label="关闭页签">×</button>`;
+      return `<div class="frame">
+        <aside class="sider">
+          <div class="brand"><i></i>生产订单</div>
+          <div class="nav-search"><input id="nav-search" aria-label="导航搜索" placeholder="导航搜索" value="${esc(state.navQuery)}"></div>
+          ${state.navHint ? `<p class="nav-hint" id="nav-hint">${esc(state.navHint)}</p>` : ""}
+          <nav class="menu">${menu}</nav>
+          <div class="fav">收藏夹<br><button type="button" data-act="menu" data-to="list">生产订单</button></div>
+        </aside>
+        <div class="main">
+          <div class="navtabs">
+            <button type="button" class="tab" data-act="home" ${screen === "list" ? 'aria-current="page"' : ""}>首页</button>
+            ${tab}
+            <div class="nav-tools"><span>搜索</span><span>消息</span><span>设置</span><span>样本用户甲</span></div>
+          </div>
+          <div class="content"><div class="panel" data-screen="${screen}">${inner}</div></div>
+        </div>
+      </div>`;
+    }
+
+    function banner() {
+      return '<span class="sample">样本数据，仅供走查</span>' +
+        (state.retried ? '<p class="ok" id="retry-banner">已重新获取样本数据</p>' : "") +
+        (state.notice ? '<p class="notice" id="notice">' + esc(state.notice) + "</p>" : "");
+    }
+
+    function gate(emptyText, title) {
+      if (state.mode === "loading") {
+        return '<div class="state" id="loading"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><p>正在加载' + title + '</p><button type="button" class="btn-green" id="finish-loading" data-act="finish-loading">结束加载</button></div>';
+      }
+      if (state.mode === "failure") {
+        return '<div class="state" id="failure"><p>' + title + '没有加载出来</p><button type="button" class="btn-green" id="retry" data-act="retry">重试</button></div>';
+      }
+      if (state.mode === "forbidden") {
+        return '<div class="state" id="forbidden"><p>当前账号不能查看' + title + "</p></div>";
+      }
+      if (state.mode === "empty") {
+        return '<div class="state" id="empty"><div class="empty-art"></div><p>' + emptyText + "</p></div>";
+      }
+      return "";
+    }
+
+    function crumb(current) {
+      return `<p class="crumb"><button type="button" data-act="back-list">生产订单</button> / ${esc(current)}</p>`;
+    }
+
+    function pageFoot() {
+      return '<div class="page-foot"><button type="button" class="btn" data-act="back-list">返回</button></div>';
+    }
+
+    function listHtml() {
+      const packed = listRows();
+      const rows = packed.page || [];
+      const total = packed.all ? packed.all.length : 0;
+      state.total = total;
+      const pages = Math.max(1, Math.ceil(total / state.pageSize) || 1);
+      const body = rows.map((item) => `<tr>
+        <td data-label="选择"><input type="checkbox" data-act="check" data-plan="${item.planNo}" ${state.checked[item.planNo] ? "checked" : ""}></td>
+        <td data-label="计划号">${esc(item.planNo)}</td>
+        <td data-label="物料号">${esc(item.materialNo)}</td>
+        <td data-label="发布状态"><span class="tag green">${esc(item.publish)}</span></td>
+        <td data-label="计划状态"><span class="tag green">${esc(item.planStatus)}</span></td>
+        <td data-label="生产状态"><span class="tag ${item.prodStatus === "已开工" ? "orange" : "green"}">${esc(item.prodStatus)}</span></td>
+        <td data-label="物料描述">${esc(item.desc)}</td>
+        <td data-label="款号">${esc(item.styleNo)}</td>
+        <td data-label="生产批号">${esc(item.batch)}</td>
+        <td data-label="客户">${esc(item.customer)}</td>
+        <td data-label="工艺路线号">${esc(item.routeNo)}</td>
+        <td data-label="BOM号">${esc(item.bomNo)}</td>
+        <td data-label="操作">
+          <button type="button" class="link" data-act="detail" data-plan="${item.planNo}">查看</button>
+          <button type="button" class="link" data-act="edit" data-plan="${item.planNo}">编辑</button>
+          <button type="button" class="link" data-act="split" data-plan="${item.planNo}">拆分</button>
+          <button type="button" class="link" data-act="more" data-plan="${item.planNo}">更多操作</button>
+        </td>
+      </tr>
+      ${state.morePlan === item.planNo ? `<tr class="more-row"><td colspan="13"><div class="drop" id="more-menu">
+          <span class="pop"><button type="button" class="link danger" data-act="delete" data-plan="${item.planNo}">删除</button>
+            ${state.deletePlan === item.planNo ? `<div class="bubble" id="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title"><p id="delete-title">确定从列表隐藏计划号 ${esc(item.planNo)}？这是样本操作，重置后会恢复。</p><div class="dialog-actions"><button type="button" class="btn" data-act="delete-cancel">取消</button><button type="button" class="btn-danger" data-act="delete-confirm" data-plan="${item.planNo}">确定</button></div></div>` : ""}
+          </span>
+          <button type="button" data-act="route" data-plan="${item.planNo}">查看工艺路线</button>
+          <button type="button" data-act="bom" data-plan="${item.planNo}">查看BOM</button>
+          <button type="button" data-act="oplog" data-plan="${item.planNo}">查看操作日志</button>
+          <button type="button" data-act="apilog" data-plan="${item.planNo}">查看接口日志</button>
+          <button type="button" data-act="work" data-plan="${item.planNo}">查看工单</button>
+          <button type="button" data-act="material" data-plan="${item.planNo}">查看物料主数据</button>
+        </div></td></tr>` : ""}`).join("");
+      const blocked = gate("当前没有生产订单", "生产订单");
+      const extras = ["勾选导出", "齐套检查", "BOM核对", "套单关联", "导入波次", "波次拆分"];
+      const pageBtns = Array.from({ length: pages }, (_, index) => {
+        const page = index + 1;
+        return `<button type="button" class="btn" data-act="page" data-page="${page}" ${page === state.page ? 'aria-current="page"' : ""}>${page}</button>`;
+      }).join("");
+      return `${banner()}
+        <h1>生产订单</h1>
+        <p class="sim">模拟规则：查看、编辑、拆分留在行上。删除、查看工艺路线、查看BOM、查看操作日志、查看接口日志、查看工单、查看物料主数据放在「更多操作」。</p>
+        <form id="list-form" class="filterbar">
+          <span>筛选</span>
+          <div class="grow">
+            <label>计划号<input id="list-plan" name="plan" value="${esc(state.listPlan)}" placeholder="请输入计划号"></label>
+            ${state.listMore ? `<label>物料号<input id="list-material" name="material" value="${esc(state.listMaterial)}" placeholder="请输入物料号"></label>` : ""}
+          </div>
+          <div class="filter-actions">
+            <button type="button" class="btn" data-act="list-more">${state.listMore ? "收起" : "更多"}</button>
+            <button type="button" class="btn" data-act="list-reset">重置</button>
+            <button class="btn-green" type="submit">搜索</button>
+          </div>
+        </form>
+        ${state.listError ? `<p class="error" id="list-error">${esc(state.listError)}</p>` : ""}
+        <div class="toolbar">
+          <button type="button" class="btn-green" data-act="toolbar" data-name="新增">新增</button>
+          <button type="button" class="btn-line" data-act="toolbar" data-name="关闭">关闭</button>
+          <button type="button" class="btn-line" data-act="toolbar" data-name="开启">开启</button>
+          <button type="button" class="btn-line" data-act="toolbar" data-name="批量编辑">批量编辑</button>
+          <span class="pop"><button type="button" class="btn-line" data-act="tool-more">更多</button>
+            ${state.toolMore ? `<div class="menu-pop" id="tool-menu">${extras.map((name) => `<button type="button" data-act="toolbar" data-name="${name}">${name}</button>`).join("")}</div>` : ""}
+          </span>
+        </div>
+        <div class="table-wrap"><table>
+          <thead><tr><th></th><th>计划号</th><th>物料号</th><th>发布状态</th><th>计划状态</th><th>生产状态</th><th>物料描述</th><th>款号</th><th>生产批号</th><th>客户</th><th>工艺路线号</th><th>BOM号</th><th>操作</th></tr></thead>
+          <tbody id="order-list">${blocked ? `<tr><td colspan="13">${blocked}</td></tr>` : (body || '<tr><td colspan="13"><div class="state" id="filter-empty"><div class="empty-art"></div><p>没有符合条件的生产订单</p></div></td></tr>')}</tbody>
+        </table></div>
+        <div class="pager"><span>共 ${blocked ? 0 : total} 项数据</span>
+          <div class="pages">
+            <label>每页<select id="page-size" aria-label="每页条数">${[10, 20, 50].map((size) => `<option value="${size}" ${size === state.pageSize ? "selected" : ""}>${size} 条/页</option>`).join("")}</select></label>
+            <button type="button" class="btn" data-act="page" data-page="${state.page - 1}">上一页</button>
+            ${blocked ? "" : pageBtns}
+            <button type="button" class="btn" data-act="page" data-page="${state.page + 1}">下一页</button>
+          </div>
+        </div>`;
+    }
+
+    function routeHtml() {
+      const item = currentOrder();
+      let steps = processes[item.planNo] || [];
+      if (state.mode === "boundary") {
+        steps = [step("0010", "样本工序-名称超长用于确认工序名称、工序代码和数量完整可见", "SAMPLE-OP-EDGE", "104"), step("0020", "样本工序-午夜边界", "SAMPLE-OP-0000", "1")];
+      }
+      const blocked = gate("这张生产订单还没有工艺路线", "工艺路线");
+      const rows = steps.map((line) => `<tr>
+        <td data-label="序号">${esc(line.no)}</td>
+        <td data-label="工序名称">${esc(line.name)}</td>
+        <td data-label="工序代码">${esc(line.code)}</td>
+        <td data-label="工序数量">${esc(line.qty)}</td>
+        <td data-label="工序序号">${esc(line.no)}</td>
+        <td data-label="ERP工序编码">${esc(line.no)}</td>
+        <td data-label="ERP工序描述">${esc(line.name)}</td>
+        <td data-label="ERP工作中心">${esc(line.code)}</td>
+        <td data-label="单位">${esc(line.unit)}</td>
+        <td data-label="备注">样本</td>
+        <td data-label="操作"><button type="button" class="link" data-act="hold" data-name="工序编辑">编辑</button></td>
+      </tr>`).join("");
+      return `${banner()}${crumb("工艺路线")}<h1>工艺路线</h1>
+        <div class="grid-3">
+          ${readonly("计划号", item.planNo)}${readonly("物料号", item.materialNo)}${readonly("物料描述", item.desc, true)}
+          ${readonly("工艺路线编号", item.routeNo)}${readonly("版本号", item.version)}${readonly("起始日期", state.mode === "boundary" ? "2026-10-09 00:00" : "")}
+          ${readonly("截止日期", state.mode === "boundary" ? "2026-10-09 23:59" : "")}
+          ${readonly("备注", "样本备注", true)}
+        </div>
+        <div class="section"><h1>工序信息</h1>
+          <button type="button" class="btn" data-act="sync">同步</button>
+          ${state.synced ? '<p class="ok" id="sync-note">样本：已记下一次同步，没有连接外部系统。可打开接口日志查看这条样本。</p>' : ""}
+          ${blocked || `<div class="table-wrap"><table><thead><tr><th>序号</th><th>工序名称</th><th>工序代码</th><th>工序数量</th><th>工序序号</th><th>ERP工序编码</th><th>ERP工序描述</th><th>ERP工作中心</th><th>单位</th><th>备注</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+        </div>${pageFoot()}`;
+    }
+
+    function bomHtml() {
+      const item = currentOrder();
+      let lines = boms[item.planNo] || [];
+      if (state.mode === "boundary") {
+        lines = [bom("0001", "SAMPLE-ITEM-EDGE", "样本组件-名称超长用于确认物料号、数量和 SAP 投料数量仍可见", "1.000", "PC", "件", "0", "1", "1", "0", "100%", true)];
+      }
+      const blocked = gate("这张生产订单还没有物料清单", "物料清单");
+      const rows = lines.map((line) => `<tr>
+        <td data-label="序号">${esc(line.no)}</td><td data-label="物料号">${esc(line.code)}</td><td data-label="物料名称">${esc(line.name)}</td>
+        <td data-label="数量">${esc(line.qty)}</td><td data-label="单位">${esc(line.unit)}</td><td data-label="单位名称">${esc(line.unitName)}</td>
+        <td data-label="可锁定数量">${esc(line.locked)}</td><td data-label="单位数量">${esc(line.unitQty)}</td>
+        <td data-label="WIN+投料数量">${esc(line.win)}</td>
+        <td data-label="SAP投料数量" class="${line.zero ? "sap-zero" : ""}">${esc(line.sap)}</td>
+        <td data-label="制成率">${esc(line.rate)}</td><td data-label="工序编号">${esc(line.opNo)}</td><td data-label="工序名称">${esc(line.opName)}</td>
+        <td data-label="有效期起">${state.mode === "boundary" ? "2026-10-09 00:00" : "待确认"}</td>
+        <td data-label="有效期止">${state.mode === "boundary" ? "2026-10-09 23:59" : "待确认"}</td>
+      </tr>`).join("");
+      return `${banner()}${crumb("物料清单")}<h1>物料清单</h1>
+        <p class="sim">模拟规则：SAP 投料数量为 0 时用警告浅底标出。有效期起止在截图里被裁切，未确认的显示「待确认」。</p>
+        <div class="grid-3">
+          ${readonly("计划号", item.planNo)}${readonly("物料清单编码", item.bomNo)}${readonly("版本", item.version)}
+          ${readonly("报工数量", item.qty)}${readonly("订单数量", item.qty)}${readonly("物料号", item.materialNo)}
+          ${readonly("物料描述", item.desc, true)}
+        </div>
+        ${blocked || `<div class="table-wrap"><table><thead><tr><th>序号</th><th>物料号</th><th>物料名称</th><th>数量</th><th>单位</th><th>单位名称</th><th>可锁定数量</th><th>单位数量</th><th>WIN+投料数量</th><th>SAP投料数量</th><th>制成率</th><th>工序编号</th><th>工序名称</th><th>有效期起</th><th>有效期止</th></tr></thead><tbody>${rows}</tbody></table></div>`}
+        ${pageFoot()}`;
+    }
+
+    function detailHtml() {
+      const item = currentOrder();
+      const blocked = gate("没有读到这张生产订单", "订单详情");
+      if (blocked) return `${banner()}${crumb("订单详情")}<h1>订单详情</h1>${blocked}${pageFoot()}`;
+      const longWarehouse = state.mode === "boundary" ? "样本仓-名称超长用于走查查看态字段不被截断到无法辨认" : item.warehouse;
+      return `${banner()}${crumb("订单详情")}<h1>订单详情</h1>
+        <p class="sim">模拟规则：查看态只读。必填字段用危险色星号。APS 其他属性页内容未在截图中出现，显示待确认。工艺路线、BOM、日志、工单和物料主数据从列表的「更多操作」进入。</p>
+        <div class="grid-3">
+          ${readonly("计划号", item.planNo)}
+          <div class="kv req"><span>物料号</span><b>${esc(item.materialNo)}</b><button type="button" class="btn" data-act="hold" data-name="选择物料">选择</button></div>
+          ${readonly("物料描述", item.desc)}
+          ${readonly("款号", item.styleNo || "")}
+          ${field("计划类型", item.planType, true)}
+          ${field("数量", item.qty, true)}
+          ${readonly("单位", item.unit)}
+          ${field("车间", item.workshop, true)}
+          ${readonly("计划生产日期", "20261008")}
+          ${field("生产批号", item.batch, true)}
+          ${readonly("生产线", "")}
+          ${readonly("有效期", item.expire)}
+          ${field("计划开始日期", state.mode === "boundary" ? "2026-10-09 00:00:00" : item.start, true)}
+          ${field("计划结束日期", state.mode === "boundary" ? "2026-10-09 23:59:00" : item.end, true)}
+          ${field("优先级", item.priority, true)}
+          ${field("仓库", longWarehouse, true)}
+          ${readonly("原料供应商", "")}
+          ${readonly("备注", "", true)}
+        </div>
+        <div class="tabs" role="tablist">
+          <button type="button" data-act="tab" data-tab="base" aria-pressed="${state.tab === "base"}">常规信息</button>
+          <button type="button" data-act="tab" data-tab="aps" aria-pressed="${state.tab === "aps"}">APS其他属性</button>
+        </div>
+        ${state.tab === "aps" ? '<p id="aps-panel">待确认。截图没有展示 APS 其他属性的字段。</p>' : `<div class="section"><h1>计划</h1><div class="grid-3">
+          ${readonly("生产管理者", item.manager)}${readonly("生产管理者描述", "样本岗位")}
+          ${readonly("物料清单", item.bomNo)}
+          ${readonly("物料清单版本", item.version)}${readonly("ERP生产版本", "")}
+          ${readonly("工艺路线", item.routeNo)}
+          ${readonly("工艺路线版本", item.version)}${readonly("颜色", item.color)}${readonly("尺码", item.size)}
+        </div></div>
+        <div class="section"><h1>分配</h1><div class="grid-3">
+          ${readonly("客户编号", "")}${readonly("客户名称", item.customer)}${readonly("委托工厂", "")}
+          ${readonly("客户批号", "")}${readonly("客户订单编号", "")}${readonly("客户生产日期", "")}
+        </div></div>`}
+        ${pageFoot()}`;
+    }
+
+    function fieldTable(fields) {
+      return `<table><thead><tr><th>字段</th><th>变更前</th><th>变更后</th></tr></thead><tbody>${fields.map((line) => `<tr>
+        <td data-label="字段">${esc(line.field)}</td>
+        <td data-label="变更前">${esc(line.before)}</td>
+        <td data-label="变更后">${esc(line.after)}</td>
+      </tr>`).join("")}</tbody></table>`;
+    }
+
+    function editHtml() {
+      const item = currentOrder();
+      const blocked = gate("没有读到这张生产订单", "编辑");
+      if (blocked) return `${banner()}${crumb("编辑生产订单")}<h1>编辑生产订单</h1>${blocked}${pageFoot()}`;
+      return `${banner()}${crumb("编辑生产订单")}<h1>编辑生产订单</h1>
+        <p>计划号 ${esc(item.planNo)}（样本）</p>
+        <p class="sim">模拟规则：一次保存只写一条操作日志。改了几个字段，这条日志里就列出几行变更前、变更后。取消回到列表，已填内容不保留，再次进入仍是当前订单值。</p>
+        <form id="edit-form" class="filters">
+          <label class="req"><span>数量</span><input id="edit-qty" name="qty" value="${esc(item.qty)}"></label>
+          <label class="req"><span>优先级</span><input id="edit-priority" name="priority" value="${esc(item.priority)}"></label>
+          <label class="req"><span>仓库</span><input id="edit-warehouse" name="warehouse" value="${esc(item.warehouse)}"></label>
+          <label><span>备注</span><input id="edit-remark" name="remark" value="${esc(item.remark)}"></label>
+          ${state.editError ? `<p class="error" id="edit-error">${esc(state.editError)}</p>` : ""}
+          <div class="dialog-actions"><button class="btn" type="button" data-act="back-list">取消</button><button class="btn-green" type="submit">保存</button></div>
+        </form>`;
+    }
+
+    function workHtml() {
+      const item = currentOrder();
+      const blocked = gate("这张生产订单还没有工单", "工单");
+      return `${banner()}${crumb("工单")}<h1>工单</h1>
+        <p class="sim">模拟规则：工单号和工单状态没有出现在现有截图里，显示待确认。</p>
+        ${blocked || `<div class="grid-3">
+          ${readonly("计划号", item.planNo)}${readonly("物料号", item.materialNo)}${readonly("物料描述", item.desc, true)}
+          ${readonly("数量", item.qty)}${readonly("生产批号", item.batch)}
+          ${readonly("工单号", "待确认")}${readonly("工单状态", "待确认")}
+        </div>`}${pageFoot()}`;
+    }
+
+    function materialHtml() {
+      const item = currentOrder();
+      const blocked = gate("没有读到物料主数据", "物料主数据");
+      return `${banner()}${crumb("物料主数据")}<h1>物料主数据</h1>
+        <p class="sim">模拟规则：只展示订单上已经出现的物料号、描述和单位。物料组、规格未在截图中出现，显示待确认。</p>
+        ${blocked || `<div class="grid-3">
+          ${readonly("物料号", item.materialNo)}${readonly("物料描述", item.desc, true)}${readonly("单位", item.unit)}
+          ${readonly("物料组", "待确认")}${readonly("规格", "待确认")}
+        </div>`}${pageFoot()}`;
+    }
+
+    function opHtml() {
+      const item = currentOrder();
+      let rows = opLogs.filter((line) => line.planNo === item.planNo);
+      if (state.mode === "boundary") {
+        rows = [
+          op("ob1", item.planNo, "2026-10-09 23:59", "样本用户甲-姓名超长用于确认操作人和时间完整可见", [
+            ["数量", "1", "2"],
+            ["仓库", "样本仓", "样本仓-名称超长用于边界走查"],
+            ["优先级", "1/3", "3/3"]
+          ]),
+          op("ob2", item.planNo, "2026-10-09 00:00", "样本用户乙", [
+            ["计划开始日期", "2026-10-08 00:00", "2026-10-09 00:00"],
+            ["计划结束日期", "2026-10-09 18:00", "2026-10-09 23:59"]
+          ])
+        ];
+      }
+      const blocked = gate("这张生产订单还没有操作日志", "操作日志");
+      const blocks = rows.map((line) => `<article class="section" id="op-${line.id}">
+        <p><button type="button" class="link" data-act="op-detail" data-id="${line.id}">${esc(line.time)}</button> ${esc(line.actor)} ${esc(line.action)}</p>
+        <p>traceId ${traceLink(line.trace)}</p>
+        <div class="table-wrap">${fieldTable(line.fields)}</div>
+      </article>`).join("");
+      if (state.opDetail && !blocked) {
+        const line = rows.find((entry) => entry.id === state.opDetail) || rows[0];
+        return `<div data-screen="oplog-detail">${banner()}${crumb("操作日志")}<h1>操作日志</h1>
+          <p id="detail-actor">${esc(line.actor)} 在 ${esc(line.time)} ${esc(line.action)}了 ${line.fields.length} 个字段</p>
+          <p>traceId ${traceLink(line.trace)}</p>
+          <div class="table-wrap">${fieldTable(line.fields)}</div>
+          <div class="page-foot"><button type="button" class="btn" data-act="op-back">返回</button></div>
+        </div>`;
+      }
+      return `${banner()}${crumb("操作日志")}<h1>操作日志</h1>
+        <p>生产订单 ${esc(item.planNo)}（样本）</p>
+        <p class="sim">模拟规则：一条日志是一次更新。同一次改了多个字段时，字段、变更前、变更后列在这一条下面。traceId 可点开这条更新的样本执行记录。</p>
+        ${blocked || (blocks ? `<div id="op-list">${blocks}</div>` : '<div class="state" id="op-empty"><div class="empty-art"></div><p>这张生产订单还没有操作日志</p></div>')}
+        ${pageFoot()}`;
+    }
+
+    function splitHtml() {
+      if (!state.splitPlan) return "";
+      const item = orders.find((entry) => entry.planNo === state.splitPlan);
+      if (!item) return "";
+      return `<div class="mask" id="split-dialog"><div class="dialog sm" role="dialog" aria-modal="true" aria-labelledby="split-title">
+        <div class="dialog-head"><h1 id="split-title">拆分</h1><button type="button" class="btn" data-act="split-cancel">关闭</button></div>
+        <p>计划号 ${esc(item.planNo)}，当前数量 ${esc(item.qty)}（样本）</p>
+        <p class="sim">模拟规则：取消或按 Esc 关闭后，拆出数量清空。确定后只写一条操作日志。</p>
+        <form id="split-form" class="filters">
+          <label class="req"><span>拆出数量</span><input id="split-qty" name="qty" value=""></label>
+          ${state.splitError ? `<p class="error" id="split-error">${esc(state.splitError)}</p>` : ""}
+          <div class="dialog-actions"><button class="btn" type="button" data-act="split-cancel">取消</button><button class="btn-green" type="submit">确定</button></div>
+        </form>
+      </div></div>`;
+    }
+
+    function apiHtml() {
+      const form = state.apiForm;
+      const blocked = gate("没有符合条件的接口日志", "接口日志");
+      const fields = `
+        <label class="req"><span>开始时间</span><input id="api-start" type="datetime-local" name="start" value="${esc(form.start)}"></label>
+        <label class="req"><span>结束时间</span><input id="api-end" type="datetime-local" name="end" value="${esc(form.end)}"></label>
+        <label><span>模块</span><select name="module"><option value="">请选择</option><option ${form.module === "计划工单" ? "selected" : ""}>计划工单</option><option ${form.module === "生产入库" ? "selected" : ""}>生产入库</option><option ${form.module === "报工模块" ? "selected" : ""}>报工模块</option></select></label>
+        <label><span>操作</span><input name="op" value="${esc(form.op)}" placeholder="请输入操作"></label>
+        <label><span>发送方URL</span><input name="sender" value="${esc(form.sender)}" placeholder="请输入发送方URL"></label>
+        <label><span>请求体</span><input id="api-body" name="body" value="${esc(form.body)}" placeholder="请输入计划号"></label>
+        <label><span>响应体</span><input name="response" value="${esc(form.response)}" placeholder="请输入响应体"></label>
+        <label><span>traceId</span><input name="trace" value="${esc(form.trace)}" placeholder="请输入traceId"></label>
+        <label><span>异常信息</span><input name="exception" value="${esc(form.exception)}" placeholder="请输入异常信息"></label>`;
+      let result = "";
+      if (!blocked && form.searched) {
+        const rows = filterApi();
+        result = rows.length ? `<div class="table-wrap"><table><thead><tr><th>操作IP地址</th><th>操作时间</th><th>消耗时间</th><th>操作 url</th><th>请求状态</th><th>模块</th><th>具体操作</th><th>目标 url</th><th>traceId</th><th>异常信息</th><th>操作</th></tr></thead><tbody id="api-list">${rows.map((line) => `<tr>
+          <td data-label="操作IP地址">${esc(line.ip)}</td>
+          <td data-label="操作时间">${esc(line.time)}</td>
+          <td data-label="消耗时间">${esc(line.cost)}</td>
+          <td data-label="操作 url">${esc(line.url)}</td>
+          <td data-label="请求状态">${esc(line.status)}</td>
+          <td data-label="模块">${esc(line.module)}</td>
+          <td data-label="具体操作">${esc(line.action)}</td>
+          <td data-label="目标 url">${esc(line.target)}</td>
+          <td data-label="traceId">${traceLink(line.trace)}</td>
+          <td data-label="异常信息">${esc(line.exception)}</td>
+          <td data-label="操作"><button type="button" class="link" data-act="api-view" data-id="${line.id}">查看</button></td>
+        </tr>`).join("")}</tbody></table></div>` : '<div class="state" id="api-empty"><p>没有符合条件的接口日志</p></div>';
+      }
+      const visible = form.collapsed ? `
+        <label class="req"><span>开始时间</span><input id="api-start" type="datetime-local" name="start" value="${esc(form.start)}"></label>
+        <label class="req"><span>结束时间</span><input id="api-end" type="datetime-local" name="end" value="${esc(form.end)}"></label>
+        <label><span>请求体</span><input id="api-body" name="body" value="${esc(form.body)}" placeholder="请输入计划号"></label>` : fields;
+      return `${banner()}${crumb("日志管理")}<h1>日志管理</h1>
+        <p class="sim">模拟规则：从订单进入时，把计划号填进请求体。地址、IP、traceId 都是样本，不发起请求。点击 traceId 查看这条接口调用的样本执行记录。开始时间和结束时间必填。重置清空条件，已输入内容不保留。</p>
+        <div class="toolbar"><button type="button" class="btn-green" data-act="api-refresh">刷新</button></div>
+        <form id="api-form" class="filters wide">${visible}
+          <div class="dialog-actions">
+            <button type="button" class="btn" data-act="api-collapse">${form.collapsed ? "更多" : "收起"}</button>
+            <button type="button" class="btn" data-act="api-reset">重置</button>
+            <button type="submit" class="btn-green" id="api-search">搜索</button>
+          </div>
+          ${form.error ? `<p class="error" id="api-error">${esc(form.error)}</p>` : ""}
+        </form>
+        ${blocked || result || '<div class="state"><p>填写开始时间和结束时间后搜索</p></div>'}
+        ${!blocked && form.searched ? `<div class="pager"><span>共 ${filterApi().length} 项数据</span></div>` : ""}
+        ${pageFoot()}`;
+    }
+
+    function filterApi() {
+      if (["empty", "loading", "failure", "forbidden"].includes(state.mode)) return [];
+      const form = state.apiForm;
+      return apiLogs.filter((line) => {
+        const stamp = line.time.replace(" ", "T").slice(0, 16);
+        if (form.start && stamp < form.start) return false;
+        if (form.end && stamp > form.end) return false;
+        if (form.module && line.module !== form.module) return false;
+        if (form.op && !line.action.includes(form.op)) return false;
+        if (form.body && !line.body.includes(form.body) && line.planNo !== form.body) return false;
+        if (form.trace && !line.trace.includes(form.trace)) return false;
+        if (form.exception && form.exception !== "无" && !line.exception.includes(form.exception)) return false;
+        return true;
+      });
+    }
+
+    function modalHtml() {
+      const line = apiLogs.find((item) => item.id === state.apiModal);
+      if (!line) return "";
+      const pretty = state.apiPretty ? `<pre id="json-preview">${esc(line.body)}\n${esc(line.resp)}</pre>` : "";
+      return `<div class="mask" id="modal"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="dialog-head"><h1 id="modal-title">查看详情</h1><button type="button" class="btn" data-act="modal-close">关闭</button></div>
+        <div class="grid-3">
+          ${readonly("模块", line.module)}${readonly("具体操作", line.action)}${readonly("URL", line.url)}
+          ${readonly("IP", line.ip)}<div class="kv"><span>traceId</span><b>${traceLink(line.trace)}</b></div>${readonly("异常信息", line.exception)}
+        </div>
+        <label class="form-row"><span>请求头</span><textarea readonly>${esc(line.head)}</textarea></label>
+        <label class="form-row"><span>请求体</span><textarea readonly>${esc(line.body)}</textarea></label>
+        <label class="form-row"><span>响应体</span><textarea readonly>${esc(line.resp)}</textarea></label>
+        ${pretty}
+        <div class="dialog-actions"><button type="button" class="btn" data-act="modal-close">取消</button><button type="button" class="btn-green" data-act="json">JSON预览</button></div>
+      </div></div>`;
+    }
+
+    function traceLink(trace) {
+      return `<button type="button" class="link" data-act="open-trace" data-trace="${esc(trace)}">${esc(trace)}</button>`;
+    }
+
+    function traceBundle(traceId) {
+      const opLine = opLogs.find((line) => line.trace === traceId);
+      const apiLine = apiLogs.find((line) => line.trace === traceId);
+      const planNo = (opLine && opLine.planNo) || (apiLine && apiLine.planNo) || currentOrder().planNo;
+      const stamp = (opLine && opLine.time) || (apiLine && apiLine.time) || "2026-10-09 14:26";
+      const path = apiLine ? apiLine.url : "/api/sample/order/update";
+      const summary = opLine
+        ? "写入字段 " + opLine.fields.map((item) => item.field + " " + item.before + " -> " + item.after).join("，")
+        : (apiLine ? apiLine.action : "查询执行记录");
+      const services = apiLine ? ["sample-gateway", "sample-interface-service"] : ["sample-order-service", "sample-gateway"];
+      const lines = [
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.102 [info] [message] 样本：进入处理 " + planNo,
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.128 [info] [message] Preparing: SELECT plan_no, qty, priority, warehouse FROM sample_order WHERE plan_no = ?",
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.141 [info] [message] Parameters: " + planNo + "(String)",
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.166 [info] [message] Total: 1",
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.210 [info] [message] 样本：" + summary,
+        "[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] " + stamp + ":01.248 [info] [message] Request PATH: " + path + ", Consumed: " + (apiLine ? apiLine.cost : "146") + "ms, Result: {\"code\":200,\"message\":\"样本：执行成功\",\"success\":true}",
+        "[样本-10.0.0.11:8080] [" + traceId + "] [sample-gateway-01] " + stamp + ":01.260 [info] [message] gateway request path: " + path + ", 状态: 200",
+        "at sample.order.SampleOrderService.apply(SampleOrderService.java:26)",
+        "at sample.order.SampleOrderController.update(SampleOrderController.java:18)",
+        "at sample.gateway.SampleGatewayFilter.doFilter(SampleGatewayFilter.java:12)"
+      ];
+      if (state.mode === "boundary") {
+        lines.unshift("[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] 2026-10-09 00:00:00.001 [info] [message] 样本：午夜边界开始");
+        lines.push("[样本-10.0.0.31:9000] [" + traceId + "] [sample-order-01] 2026-10-09 23:59:59.999 [info] [message] 样本边界：这条执行说明故意写得很长，用来确认同一条 traceId 在订单服务和网关日志里都能完整看见");
+      }
+      return { services, lines, shown: state.mode === "boundary" ? traceId + "-EDGE-超长" : traceId };
+    }
+
+    function paintTrace(line, traceId) {
+      const token = esc(traceId);
+      return esc(line).split(token).join('<span class="trace-hit">' + token + "</span>");
+    }
+
+    function traceHtml() {
+      const traceId = state.traceId || "SAMPLE-TRACE-o1";
+      const bundle = traceBundle(traceId);
+      const fromLabel = state.traceFrom === "apilog" ? "日志管理" : "操作日志";
+      const blocked = gate("这条 traceId 没有样本执行记录", "代码逻辑");
+      return `${banner()}<p class="crumb"><button type="button" data-act="back-list">生产订单</button> / <button type="button" data-act="trace-back">${fromLabel}</button> / 代码逻辑</p><h1>代码逻辑</h1>
+        <p class="sim">模拟规则：点击 traceId 后，按调用链把订单服务和网关的样本日志排在一起。日志区只用样本地址、样本语句和样本类名，不连接真实后台。</p>
+        <p id="trace-current">当前 traceId ${esc(bundle.shown)}</p>
+        <div class="trace-layout" id="trace-view">
+          <aside class="trace-side">${bundle.services.map((name) => `<div class="svc"><div class="svc-name">${esc(name)}</div><div class="trace-hit">${esc(bundle.shown)}</div></div>`).join("")}</aside>
+          ${blocked || `<div class="trace-log" id="trace-log">${bundle.lines.map((line) => paintTrace(line, traceId)).join("\n")}</div>`}
+        </div>
+        <div class="page-foot"><button type="button" class="btn" data-act="trace-back">返回</button></div>`;
+    }
+
+    function readonly(label, value, wide) {
+      return `<div class="kv${wide ? " span-2" : ""}"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;
+    }
+    function field(label, value) {
+      return `<div class="kv req"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;
+    }
+    function linkField(label, value, act, plan) {
+      return `<label class="req">${label}<button type="button" class="link" data-act="${act}" data-plan="${plan}">${esc(value)}</button></label>`;
+    }
+
+    function openTrace(trace, from) {
+      state.traceId = trace || "SAMPLE-TRACE-o1";
+      state.traceFrom = from && from !== "trace" ? from : (state.traceFrom || "oplog");
+      state.scene = "trace";
+      state.apiModal = null;
+      state.notice = "";
+      render();
+    }
+
+    function openOrder(plan, scene) {
+      state.planNo = plan;
+      state.scene = scene;
+      state.opDetail = null;
+      state.apiModal = null;
+      state.notice = "";
+      if (scene === "apilog") {
+        state.apiForm.body = plan;
+        state.apiForm.searched = true;
+        state.apiForm.error = "";
+        if (!state.apiForm.start) state.apiForm.start = "2026-10-02T15:56";
+        if (!state.apiForm.end) state.apiForm.end = "2026-10-09T15:56";
+      }
+      render();
+    }
+
+    function readApiForm(form) {
+      const data = new FormData(form);
+      ["start", "end", "module", "op", "sender", "body", "response", "trace", "exception"].forEach((key) => {
+        if (form.elements.namedItem(key)) state.apiForm[key] = data.get(key) || "";
+      });
+    }
+
+    function validateApi() {
+      if (!state.apiForm.start) return "请填写开始时间";
+      if (!state.apiForm.end) return "请填写结束时间";
+      if (state.apiForm.end < state.apiForm.start) return "结束时间要晚于开始时间";
+      return "";
+    }
+
+    document.getElementById("app").addEventListener("click", (event) => {
+      if (event.target.id === "split-dialog") {
+        state.splitPlan = "";
+        state.splitError = "";
+        render();
+        return;
+      }
+      if (event.target.id === "modal") {
+        state.apiModal = null;
+        render();
+        return;
+      }
+      const target = event.target.closest("[data-act]");
+      if (!target) return;
+      const act = target.dataset.act;
+      if (act === "menu" || act === "home" || act === "close-tab") {
+        const to = act === "menu" ? target.dataset.to : "list";
+        state.opDetail = null;
+        state.apiModal = null;
+        state.notice = "";
+        state.toolMore = false;
+        if (to === "list") {
+          state.scene = "list";
+          render();
+        } else if (to === "trace") {
+          openTrace(state.traceId || "SAMPLE-TRACE-o1", state.traceFrom || "oplog");
+        } else {
+          openOrder(state.planNo, to);
+        }
+        return;
+      }
+      if (act === "more") {
+        state.morePlan = state.morePlan === target.dataset.plan ? "" : target.dataset.plan;
+        if (!state.morePlan) state.deletePlan = "";
+        render();
+        return;
+      }
+      if (act === "tool-more") {
+        state.toolMore = !state.toolMore;
+        render();
+        return;
+      }
+      if (act === "list-more") {
+        const form = document.getElementById("list-form");
+        if (form) {
+          state.listPlan = new FormData(form).get("plan") || "";
+          const material = new FormData(form).get("material");
+          if (material !== null) state.listMaterial = material;
+        }
+        state.listMore = !state.listMore;
+        render();
+        return;
+      }
+      if (act === "check") {
+        state.checked[target.dataset.plan] = target.checked;
+        return;
+      }
+      if (act === "route" || act === "bom" || act === "detail" || act === "oplog" || act === "apilog" || act === "work" || act === "material") {
+        openOrder(target.dataset.plan, act === "detail" ? "detail" : act);
+        state.morePlan = "";
+        return;
+      }
+      if (act === "edit") {
+        state.planNo = target.dataset.plan;
+        state.scene = "edit";
+        state.editError = "";
+        state.morePlan = "";
+        state.notice = "";
+        render();
+        return;
+      }
+      if (act === "split") {
+        state.splitPlan = target.dataset.plan;
+        state.splitError = "";
+        state.morePlan = "";
+        render();
+        return;
+      }
+      if (act === "split-cancel") {
+        state.splitPlan = "";
+        state.splitError = "";
+        render();
+        return;
+      }
+      if (act === "delete") {
+        state.deletePlan = target.dataset.plan;
+        state.morePlan = target.dataset.plan;
+        render();
+        return;
+      }
+      if (act === "delete-cancel") {
+        state.deletePlan = "";
+        render();
+        return;
+      }
+      if (act === "delete-confirm") {
+        state.hidden[target.dataset.plan] = true;
+        state.deletePlan = "";
+        state.morePlan = "";
+        state.notice = "样本：该订单已从列表隐藏。点击重置可恢复。";
+        render();
+        return;
+      }
+      if (act === "back-list") {
+        state.scene = "list";
+        state.opDetail = null;
+        state.apiModal = null;
+        state.notice = "";
+        render();
+        return;
+      }
+      if (act === "hold" || act === "toolbar") {
+        const selected = Object.values(state.checked).some(Boolean);
+        state.toolMore = false;
+        if (["关闭", "开启", "批量编辑", "勾选导出"].includes(target.dataset.name) && !selected) {
+          state.notice = "请先勾选生产订单。";
+        } else {
+          state.notice = target.dataset.name + "不在本次整合范围，按钮保留为现有界面对照，没有连接正式操作。";
+        }
+        render();
+        return;
+      }
+      if (act === "list-reset") {
+        state.listPlan = "";
+        state.listMaterial = "";
+        state.listError = "";
+        state.page = 1;
+        render();
+        return;
+      }
+      if (act === "page") {
+        const pages = Math.max(1, Math.ceil((state.total || 0) / state.pageSize) || 1);
+        const next = Number(target.dataset.page);
+        if (next < 1) state.notice = "已经是第一页";
+        else if (next > pages) state.notice = "已经是最后一页";
+        else { state.page = next; state.notice = ""; }
+        render();
+        return;
+      }
+      if (act === "sync") {
+        state.synced = true;
+        apiLogs.unshift(api("sync-" + Date.now(), state.planNo, "2026-10-09 15:50:00", "计划工单", "样本同步", "/api/sample/sap/shoporder/sync", "120"));
+        state.notice = "";
+        render();
+        return;
+      }
+      if (act === "tab") {
+        state.tab = target.dataset.tab;
+        render();
+        return;
+      }
+      if (act === "op-detail") {
+        state.opDetail = target.dataset.id;
+        render();
+        return;
+      }
+      if (act === "op-back") {
+        state.opDetail = null;
+        render();
+        return;
+      }
+      if (act === "open-trace") {
+        openTrace(target.dataset.trace, state.scene === "trace" ? state.traceFrom : state.scene);
+        return;
+      }
+      if (act === "trace-back") {
+        state.scene = state.traceFrom === "trace" ? "oplog" : (state.traceFrom || "oplog");
+        render();
+        return;
+      }
+      if (act === "api-view") {
+        state.apiModal = target.dataset.id;
+        state.apiPretty = false;
+        render();
+        return;
+      }
+      if (act === "modal-close") {
+        state.apiModal = null;
+        render();
+        return;
+      }
+      if (act === "json") {
+        state.apiPretty = !state.apiPretty;
+        render();
+        return;
+      }
+      if (act === "api-collapse") {
+        const form = document.getElementById("api-form");
+        if (form) readApiForm(form);
+        state.apiForm.collapsed = !state.apiForm.collapsed;
+        render();
+        return;
+      }
+      if (act === "api-reset") {
+        const body = state.apiForm.body;
+        state.apiForm = initialApiForm();
+        state.apiForm.body = "";
+        state.notice = body ? "" : "";
+        render();
+        return;
+      }
+      if (act === "api-refresh") {
+        const form = document.getElementById("api-form");
+        if (form) readApiForm(form);
+        state.apiForm.error = validateApi();
+        state.apiForm.searched = !state.apiForm.error;
+        render();
+        return;
+      }
+      if (act === "finish-loading") {
+        state.mode = "success";
+        render();
+        return;
+      }
+      if (act === "retry") {
+        state.mode = "success";
+        state.retried = true;
+        render();
+      }
+    });
+
+    document.getElementById("app").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (event.target.id === "edit-form") {
+        const item = currentOrder();
+        const data = new FormData(event.target);
+        const qty = String(data.get("qty") || "").trim();
+        const priority = String(data.get("priority") || "").trim();
+        const warehouse = String(data.get("warehouse") || "").trim();
+        const remark = String(data.get("remark") || "").trim();
+        if (!qty || !priority || !warehouse) {
+          state.editError = "请填写数量、优先级和仓库";
+          render();
+          return;
+        }
+        if (!/^\d+(\.\d+)?$/.test(qty) || Number(qty) <= 0) {
+          state.editError = "数量需要是大于 0 的数字";
+          render();
+          return;
+        }
+        const fields = [];
+        if (qty !== String(item.qty)) fields.push(["数量", String(item.qty), qty]);
+        if (priority !== item.priority) fields.push(["优先级", item.priority, priority]);
+        if (warehouse !== item.warehouse) fields.push(["仓库", item.warehouse, warehouse]);
+        if (remark !== item.remark) fields.push(["备注", item.remark || "空", remark || "空"]);
+        if (!fields.length) {
+          state.editError = "没有字段变化，未写入操作日志";
+          render();
+          return;
+        }
+        item.qty = qty;
+        item.priority = priority;
+        item.warehouse = warehouse;
+        item.remark = remark;
+        opLogs.unshift(op("edit-" + Date.now(), item.planNo, "2026-10-09 16:20", "样本用户甲", fields));
+        state.editError = "";
+        state.scene = "oplog";
+        state.planNo = item.planNo;
+        state.notice = "样本：已保存，并写入一条包含 " + fields.length + " 个字段的操作日志。";
+        render();
+        return;
+      }
+      if (event.target.id === "split-form") {
+        const item = orders.find((entry) => entry.planNo === state.splitPlan);
+        const raw = String(new FormData(event.target).get("qty") || "").trim();
+        const current = Number(item.qty);
+        const next = Number(raw);
+        if (!raw) {
+          state.splitError = "请填写拆出数量";
+        } else if (!/^\d+(\.\d+)?$/.test(raw) || next <= 0 || next >= current) {
+          state.splitError = "拆出数量需要大于 0，并且小于当前数量 " + item.qty;
+        } else {
+          const remain = String(current - next);
+          opLogs.unshift(op("split-" + Date.now(), item.planNo, "2026-10-09 16:30", "样本用户甲", [
+            ["数量", item.qty, remain],
+            ["拆出数量", "0", raw]
+          ]));
+          item.qty = remain;
+          state.splitPlan = "";
+          state.splitError = "";
+          state.scene = "oplog";
+          state.planNo = item.planNo;
+          state.notice = "样本：拆分已记入同一条操作日志，包含数量和拆出数量。";
+        }
+        render();
+        return;
+      }
+      if (event.target.id === "list-form") {
+        const data = new FormData(event.target);
+        const value = data.get("plan") || "";
+        const material = data.get("material");
+        if ((value.trim() === "" && value.length > 0) || (material !== null && material.trim() === "" && material.length > 0)) {
+          state.listError = value.trim() === "" && value.length > 0 ? "请输入计划号" : "请输入物料号";
+          state.listPlan = value;
+          if (material !== null) state.listMaterial = material;
+        } else {
+          state.listError = "";
+          state.listPlan = value.trim();
+          state.listMaterial = material === null ? state.listMaterial : material.trim();
+          state.page = 1;
+        }
+        render();
+        return;
+      }
+      if (event.target.id === "api-form") {
+        readApiForm(event.target);
+        state.apiForm.error = validateApi();
+        state.apiForm.searched = !state.apiForm.error;
+        render();
+      }
+    });
+
+    document.querySelectorAll("[data-scene]").forEach((button) => button.addEventListener("click", () => {
+      state.scene = button.dataset.scene;
+      state.opDetail = null;
+      state.apiModal = null;
+      state.notice = "";
+      if (state.scene === "trace" && !state.traceId) state.traceId = "SAMPLE-TRACE-o1";
+      render();
+    }));
+    document.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => {
+      state.mode = button.dataset.mode;
+      state.opDetail = null;
+      state.apiModal = null;
+      render();
+    }));
+    document.getElementById("reset").addEventListener("click", () => {
+      state.scene = "list";
+      state.mode = "success";
+      state.planNo = "SAMPLE-28673";
+      state.narrow = false;
+      state.retried = false;
+      state.notice = "";
+      state.tab = "base";
+      state.opDetail = null;
+      state.apiModal = null;
+      state.apiPretty = false;
+      state.listOpen = false;
+      state.listMore = false;
+      state.listPlan = "";
+      state.listMaterial = "";
+      state.listError = "";
+      state.toolMore = false;
+      state.navQuery = "";
+      state.navHint = "";
+      state.page = 1;
+      state.pageSize = 20;
+      state.checked = {};
+      state.morePlan = "";
+      state.editError = "";
+      state.splitPlan = "";
+      state.splitError = "";
+      state.deletePlan = "";
+      state.hidden = {};
+      state.apiForm = initialApiForm();
+      state.synced = false;
+      state.traceId = "SAMPLE-TRACE-o1";
+      state.traceFrom = "oplog";
+      opLogs = seedOps();
+      orders.forEach((item) => {
+        if (item.planNo === "SAMPLE-28673") {
+          item.qty = "104";
+          item.priority = "3/3";
+          item.warehouse = "样本仓";
+          item.remark = "样本备注";
+        }
+        if (item.planNo === "SAMPLE-17850") item.qty = "80";
+        if (item.planNo === "SAMPLE-97865") item.qty = "56";
+      });
+      apiLogs = apiLogs.filter((item) => !String(item.id).startsWith("sync-"));
+      render();
+    });
+    document.getElementById("viewport").addEventListener("click", () => {
+      state.narrow = !state.narrow;
+      render();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        if (state.apiModal) state.apiModal = null;
+        else if (state.splitPlan) { state.splitPlan = ""; state.splitError = ""; }
+        else if (state.deletePlan) state.deletePlan = "";
+        else if (state.opDetail) state.opDetail = null;
+        else if (state.toolMore) state.toolMore = false;
+        else if (state.morePlan) { state.morePlan = ""; state.deletePlan = ""; }
+        else if (state.scene === "trace") state.scene = state.traceFrom || "oplog";
+        else if (state.notice) state.notice = "";
+        else return;
+        render();
+      }
+    });
+    document.getElementById("app").addEventListener("change", (event) => {
+      if (event.target.id === "page-size") {
+        state.pageSize = Number(event.target.value);
+        state.page = 1;
+        state.notice = "每页 " + state.pageSize + " 条（样本）";
+        render();
+      }
+    });
+    document.getElementById("app").addEventListener("input", (event) => {
+      if (event.target.id !== "nav-search") return;
+      state.navQuery = event.target.value;
+      const query = state.navQuery.trim();
+      if (!query && state.navQuery.length) {
+        state.navHint = "请输入菜单名称";
+      } else if (query && !NAV.some(([, name]) => name.includes(query))) {
+        state.navHint = "没有匹配的菜单";
+      } else {
+        state.navHint = "";
+      }
+      document.querySelectorAll(".menu button").forEach((button) => {
+        button.hidden = Boolean(query) && !button.textContent.includes(query);
+      });
+      let hint = document.getElementById("nav-hint");
+      if (state.navHint) {
+        if (!hint) {
+          hint = document.createElement("p");
+          hint.id = "nav-hint";
+          hint.className = "nav-hint";
+          event.target.parentElement.after(hint);
+        }
+        hint.textContent = state.navHint;
+      } else if (hint) {
+        hint.remove();
+      }
+    });
+    document.getElementById("app").addEventListener("keydown", (event) => {
+      if (event.target.id !== "nav-search" || event.key !== "Enter") return;
+      event.preventDefault();
+      const query = state.navQuery.trim();
+      if (!query) {
+        state.navHint = state.navQuery.length ? "请输入菜单名称" : "";
+        render();
+        return;
+      }
+      const hit = NAV.find(([, name]) => name.includes(query));
+      if (!hit) {
+        state.navHint = "没有匹配的菜单";
+        render();
+        return;
+      }
+      state.navHint = "";
+      if (hit[0] === "list") {
+        state.scene = "list";
+        render();
+      } else {
+        openOrder(state.planNo, hit[0]);
+      }
+    });
+    render();
+  </script>
+</body>
+</html>
