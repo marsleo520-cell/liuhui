@@ -6,102 +6,170 @@
   <title>原型：生产订单整合</title>
   <style>
     :root {
-      --ink: #1d2129;
-      --muted: #86909c;
-      --line: #e5e6eb;
-      --bg: #f2f3f5;
-      --card: #fff;
-      --green: #00b42a;
-      --green-soft: #e8ffea;
-      --orange: #ff7d00;
-      --orange-soft: #fff7e8;
-      --fill: #c8f7d4;
-      --yellow: #fff3b0;
-      --danger: #cb272d;
-      --focus: #165dff;
+      --color-primary: #009090;
+      --color-primary-hover: #209E9E;
+      --color-primary-active: #007A7A;
+      --color-primary-light: #E7F6F6;
+      --color-success: #00AC97;
+      --color-success-light: #E8FFF8;
+      --color-warning: #E37318;
+      --color-warning-light: #FFF6E8;
+      --color-danger: #D54941;
+      --color-danger-light: #FFEDE8;
+      --text-title: #181818;
+      --text-regular: #4B4B4B;
+      --text-secondary: #8B8B8B;
+      --bg-page: #F5F6F7;
+      --bg-card: #FFFFFF;
+      --bg-muted: #F3F3F3;
+      --border: #DCDCDC;
+      --mask: rgba(0, 0, 0, 0.5);
+      --shadow-base: 0 0 6px rgba(0, 0, 0, 0.1);
+      --shadow-default: 0 0 12px rgba(0, 0, 0, 0.2);
+      --ink: var(--text-title);
+      --muted: var(--text-secondary);
+      --line: var(--border);
+      --bg: var(--bg-page);
+      --card: var(--bg-card);
+      --green: var(--color-primary);
+      --danger: var(--color-danger);
+      --focus: var(--color-primary);
+      --yellow: #FFF6E8;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; color: var(--ink); background: var(--bg); font: 13px/1.5 "Segoe UI", "PingFang SC", "Noto Sans SC", sans-serif; }
+    body { margin: 0; color: var(--text-regular); background: var(--bg-page); font: 14px/22px "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; }
     button, input, select, textarea { font: inherit; color: inherit; }
     button { cursor: pointer; }
-    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-    .control { background: #1d2129; color: #f7f8fa; padding: 10px 14px 12px; }
-    .control p { margin: 0 0 8px; font-size: 12px; }
-    .control-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    .control-row + .control-row { margin-top: 6px; }
-    .control button { border: 0; background: #353a42; color: #fff; border-radius: 999px; padding: 5px 10px; }
-    .control button[aria-pressed="true"] { background: #fff; color: #1d2129; }
-    .flag { color: #d5dbe3; font-size: 12px; }
-    .note { width: min(1280px, calc(100% - 24px)); margin: 12px auto 0; color: #4e5969; }
-    .shell { width: min(1440px, calc(100% - 24px)); margin: 12px auto 32px; }
-    body.narrow .shell, body.narrow .note { width: min(390px, calc(100% - 12px)); }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
-    .sample { display: inline-block; margin-bottom: 8px; padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: #fff; }
-    h1 { font-size: 16px; margin: 0 0 10px; }
-    .toolbar, .actions, .pager { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .toolbar { margin-bottom: 10px; }
-    .btn, .btn-green, .btn-line, .mini { border-radius: 4px; padding: 6px 10px; border: 1px solid var(--line); background: #fff; }
-    .btn-green { background: var(--green); color: #fff; border-color: var(--green); }
-    .btn-line { color: #4e5969; }
-    .link { border: 0; background: transparent; color: var(--green); padding: 0 4px; }
-    .link[disabled], .btn[disabled] { color: #c9cdd4; cursor: not-allowed; }
-    .tag { display: inline-block; min-width: 52px; text-align: center; border-radius: 4px; padding: 2px 6px; }
-    .tag.green { background: var(--green); color: #fff; }
-    .tag.orange { background: var(--orange); color: #fff; }
+    :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+    .control { background: #181818; color: #fff; padding: 8px 16px 12px; }
+    .control p { margin: 0 0 8px; font-size: 12px; line-height: 20px; }
+    .control-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .control-row + .control-row { margin-top: 8px; }
+    .control button { border: 0; background: #4B4B4B; color: #fff; border-radius: 999px; padding: 4px 12px; }
+    .control button[aria-pressed="true"] { background: #fff; color: #181818; }
+    .flag { color: #DCDCDC; font-size: 12px; line-height: 20px; }
+    #app { min-height: calc(100vh - 92px); }
+    .frame { display: flex; min-height: calc(100vh - 92px); background: var(--bg-page); }
+    .sider { width: 232px; flex: none; background: #fff; border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .brand { display: flex; align-items: center; gap: 8px; height: 56px; padding: 0 16px; color: var(--color-primary); font-weight: 700; }
+    .brand i { width: 24px; height: 24px; border-radius: 4px; background: var(--color-primary); display: inline-block; }
+    .nav-search { margin: 0 16px 8px; }
+    .menu { padding: 8px; }
+    .menu button { display: flex; width: 100%; text-align: left; border: 0; background: transparent; border-radius: 4px; padding: 8px 12px; color: var(--text-regular); white-space: nowrap; }
+    .menu button[aria-current="page"] { background: var(--bg-muted); color: var(--text-title); font-weight: 700; }
+    .menu button:hover { background: var(--bg-muted); }
+    .fav { margin-top: auto; padding: 16px; }
+    .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .navtabs { height: 48px; background: #fff; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; padding: 0 16px; }
+    .navtabs button.tab { border: 0; background: var(--bg-muted); border-radius: 4px; padding: 4px 8px; color: var(--text-regular); }
+    .navtabs button.tab[aria-current="page"] { background: var(--color-primary-light); color: var(--color-primary); }
+    .navtabs .x { border: 0; background: transparent; color: var(--text-secondary); padding: 0 4px; }
+    .nav-tools { margin-left: auto; display: flex; gap: 12px; color: var(--text-secondary); }
+    .content { padding: 16px; }
+    .panel { background: #fff; border-radius: 4px; padding: 16px; }
+    .sample { display: inline-block; margin: 0 0 8px; padding: 2px 8px; border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); background: #fff; font-size: 12px; line-height: 20px; }
+    h1 { font-size: 20px; line-height: 28px; margin: 0 0 16px; color: var(--text-title); font-weight: 700; }
+    .crumb { margin: 0 0 16px; color: var(--text-secondary); }
+    .crumb button { border: 0; background: transparent; color: var(--text-regular); padding: 0; }
+    .filterbar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+    .filterbar .grow { display: flex; gap: 12px; flex: 1; flex-wrap: wrap; }
+    .filterbar label { display: flex; align-items: center; gap: 8px; color: var(--text-regular); white-space: nowrap; }
+    .filterbar input, .filterbar select { width: 180px; }
+    .toolbar, .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .toolbar { margin-bottom: 12px; }
+    .btn, .btn-green, .btn-line { border-radius: 4px; padding: 5px 16px; border: 1px solid var(--border); background: #fff; color: var(--text-title); line-height: 22px; }
+    .btn:hover, .btn-line:hover { background: var(--bg-muted); }
+    .btn-green { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .btn-green:hover { background: var(--color-primary-hover); }
+    .link { border: 0; background: transparent; color: var(--color-primary); padding: 0 8px; }
+    .link.danger { color: var(--color-danger); }
+    .tag { display: inline-block; border-radius: 4px; padding: 0 8px; line-height: 22px; background: var(--bg-muted); color: var(--text-regular); }
+    .tag.green { background: var(--color-success-light); color: var(--color-success); }
+    .tag.orange { background: var(--color-warning-light); color: var(--color-warning); }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
-    th, td { border-bottom: 1px solid var(--line); padding: 8px; text-align: left; vertical-align: middle; white-space: nowrap; }
-    th { background: #f7f8fa; color: #4e5969; font-weight: 600; white-space: nowrap; }
-    .more-row td { background: #f7f8fa; white-space: normal; }
-    .notice, .sim, .error, .ok { border-radius: 6px; padding: 8px 10px; margin: 0 0 10px; }
-    .notice { background: #fff7e8; color: #7a4e00; }
-    .sim { background: #f2f3f5; color: #4e5969; }
-    .error { background: #ffece8; color: var(--danger); }
-    .ok { background: #e8ffea; color: #008026; }
-    .filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; background: #f7f8fa; padding: 12px; border-radius: 6px; margin-bottom: 10px; }
-    .filters label, .field label { display: flex; flex-direction: column; gap: 4px; color: #4e5969; }
-    .req::before { content: "* "; color: var(--danger); }
-    input, select, textarea { border: 1px solid #c9cdd4; border-radius: 4px; padding: 6px 8px; background: #fff; width: 100%; }
+    th, td { border: 1px solid var(--border); padding: 12px 16px; text-align: left; vertical-align: middle; white-space: nowrap; }
+    th { background: var(--bg-muted); color: var(--text-title); font-weight: 700; }
+    .more-row td { background: #fff; white-space: normal; }
+    .drop, .menu-pop { display: flex; flex-direction: column; width: 180px; min-width: 160px; background: #fff; border: 1px solid var(--border); border-radius: 4px; box-shadow: var(--shadow-base); }
+    .drop button, .menu-pop button { border: 0; background: #fff; padding: 8px 16px; text-align: left; color: var(--text-regular); }
+    .drop button:hover, .menu-pop button:hover { background: var(--bg-muted); }
+    .pop { position: relative; display: inline-block; }
+    .menu-pop { position: absolute; top: 36px; left: 0; z-index: 6; }
+    .filter-actions { margin-left: auto; display: flex; gap: 8px; flex: none; }
+    .kv { display: flex; align-items: flex-start; gap: 8px; min-height: 32px; }
+    .kv > span { width: 112px; text-align: right; color: var(--text-regular); flex: none; }
+    .kv > b { font-weight: 400; color: var(--text-title); }
+    .kv.req > span::before { content: "*"; color: var(--color-danger); margin-right: 4px; }
+    .btn-danger { background: var(--color-danger); color: #fff; border-color: var(--color-danger); }
+    .btn-danger:hover { background: #c63b35; }
+    .crumb button:hover { color: var(--color-primary); }
+    .nav-hint { margin: 0 16px 8px; color: var(--color-danger); font-size: 12px; line-height: 20px; }
+    .fav button { border: 0; background: transparent; color: var(--text-regular); padding: 0; }
+    .notice, .sim, .error, .ok { border-radius: 4px; padding: 8px 16px; margin: 0 0 16px; }
+    .notice { background: var(--color-warning-light); color: var(--text-title); }
+    .sim { background: var(--color-primary-light); color: var(--text-title); }
+    .error { background: var(--color-danger-light); color: var(--text-title); }
+    .ok { background: var(--color-success-light); color: var(--text-title); }
+    .filters { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
+    .filters.wide { grid-template-columns: 1fr 1fr; }
+    .filters label, .form-row { display: flex; align-items: center; gap: 8px; }
+    .filters label input, .filters label select, .filters label textarea, .form-row textarea { flex: 1; width: auto; max-width: 360px; }
+    .filters label span, .form-row span { width: 96px; text-align: right; color: var(--text-regular); flex: none; }
+    .req > span::before { content: "*"; color: var(--color-danger); margin-right: 4px; }
+    input, select, textarea { border: 1px solid var(--border); border-radius: 4px; padding: 5px 8px; background: #fff; width: 100%; }
+    input:focus, select:focus, textarea:focus { border-color: var(--color-primary); outline: none; }
     textarea { min-height: 72px; resize: vertical; }
-    input[readonly], textarea[readonly] { background: #f2f3f5; }
-    .fill[readonly] { background: var(--fill); }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 16px; }
+    input[readonly], textarea[readonly] { background: var(--bg-muted); }
+    .fill[readonly] { background: #fff; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
     .span-2 { grid-column: span 2; }
-    .section { margin-top: 16px; padding-top: 8px; border-top: 1px solid var(--line); }
-    .tabs { display: flex; gap: 0; margin: 8px 0; }
-    .tabs button { border: 1px solid var(--line); background: #fff; padding: 6px 12px; }
-    .tabs button[aria-pressed="true"] { color: var(--green); border-bottom-color: #fff; }
-    .state { text-align: center; padding: 36px 12px; }
-    .spinner { width: 22px; height: 22px; margin: 0 auto 8px; border: 3px solid var(--line); border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; }
+    .section { margin-top: 24px; }
+    .tabs { display: flex; gap: 0; margin: 16px 0; border-bottom: 1px solid var(--border); }
+    .tabs button { border: 0; background: transparent; padding: 8px 16px; color: var(--text-regular); }
+    .tabs button[aria-pressed="true"] { color: var(--color-primary); box-shadow: inset 0 -2px 0 var(--color-primary); }
+    .state { text-align: center; padding: 48px 16px; color: var(--text-secondary); }
+    .empty-art { width: 80px; height: 48px; margin: 0 auto 8px; border-radius: 40px 40px 8px 8px; background: linear-gradient(#F3F3F3, #E7F6F6); }
+    .skeleton { height: 16px; margin: 12px 0; border-radius: 4px; background: linear-gradient(90deg, #F3F3F3, #E7F6F6, #F3F3F3); }
+    .spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--color-primary); border-radius: 50%; display: inline-block; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .sap-zero { background: var(--yellow); }
-    .mask { position: fixed; inset: 0; background: rgba(29, 33, 41, .45); display: flex; align-items: flex-start; justify-content: center; padding: 48px 16px; }
-    .dialog { width: min(920px, 100%); max-height: calc(100vh - 80px); overflow: auto; background: #fff; border-radius: 8px; padding: 16px; }
-    .dialog-head { display: flex; justify-content: space-between; align-items: center; }
-    .pager { justify-content: flex-end; margin-top: 10px; color: var(--muted); }
-    .back { margin-bottom: 8px; }
-    body.narrow .filters, body.narrow .grid-3 { grid-template-columns: 1fr; }
+    .sap-zero { background: var(--color-warning-light); }
+    .mask { position: fixed; inset: 0; background: var(--mask); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 20; }
+    .dialog { width: min(800px, 100%); max-height: calc(100vh - 80px); overflow: auto; background: #fff; border-radius: 6px; padding: 32px; box-shadow: var(--shadow-default); }
+    .dialog.sm { width: min(512px, 100%); }
+    .dialog.xs { width: min(416px, 100%); }
+    .dialog-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+    .pop .bubble { position: absolute; z-index: 5; left: 0; top: 36px; width: 240px; background: #fff; border-radius: 6px; box-shadow: var(--shadow-default); padding: 16px; white-space: normal; }
+    .pager { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 16px; color: var(--text-regular); }
+    .pages { display: flex; gap: 8px; align-items: center; }
+    .pages button[aria-current="page"] { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+    .pages select { width: 112px; color: var(--color-primary); border-color: var(--color-primary); }
+    .page-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; }
+    .toast { position: fixed; top: 108px; left: 50%; transform: translateX(-50%); background: #fff; border-radius: 4px; box-shadow: var(--shadow-default); padding: 8px 16px; z-index: 30; }
+    body.narrow .sider { display: none; }
+    body.narrow .filterbar, body.narrow .grid-3, body.narrow .filters, body.narrow .filters.wide { display: block; }
+    body.narrow .filterbar input, body.narrow .filterbar select { width: 100%; margin: 8px 0; }
     body.narrow .span-2 { grid-column: auto; }
     body.narrow table, body.narrow thead, body.narrow tbody, body.narrow tr, body.narrow th, body.narrow td { display: block; width: 100%; }
     body.narrow thead { display: none; }
-    body.narrow tr { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; padding: 6px; }
+    body.narrow tr { border: 1px solid var(--border); border-radius: 4px; margin-bottom: 8px; }
     body.narrow td { border: 0; white-space: normal; }
-    body.narrow td::before { content: attr(data-label); display: block; color: var(--muted); font-size: 12px; }
-    body.narrow .control { position: static; }
+    body.narrow td::before { content: attr(data-label); display: block; color: var(--text-secondary); font-size: 12px; line-height: 20px; }
   </style>
 </head>
 <body>
   <header class="control" aria-label="原型控制条">
     <p>原型控制条，不是正式功能</p>
     <div class="control-row" role="group" aria-label="场景切换">
-      <button type="button" data-scene="list">订单列表</button>
-      <button type="button" data-scene="route">工艺路线</button>
-      <button type="button" data-scene="bom">物料清单</button>
-      <button type="button" data-scene="detail">订单详情</button>
-      <button type="button" data-scene="oplog">操作日志</button>
-      <button type="button" data-scene="apilog">接口日志</button>
-      <button type="button" data-scene="work">工单</button>
-      <button type="button" data-scene="material">物料主数据</button>
+      <button type="button" data-scene="list">主路径 · 订单列表</button>
+      <button type="button" data-scene="route">分支 · 工艺路线</button>
+      <button type="button" data-scene="bom">分支 · 物料清单</button>
+      <button type="button" data-scene="detail">分支 · 订单详情</button>
+      <button type="button" data-scene="oplog">分支 · 操作日志</button>
+      <button type="button" data-scene="apilog">分支 · 接口日志</button>
+      <button type="button" data-scene="work">分支 · 工单</button>
+      <button type="button" data-scene="material">分支 · 物料主数据</button>
     </div>
     <div class="control-row" role="group" aria-label="状态切换">
       <button type="button" data-mode="empty">空</button>
@@ -117,8 +185,7 @@
       <span id="viewport-flag" class="flag">当前为桌面</span>
     </div>
   </header>
-  <p class="note">视觉按提供的界面截图近似还原，仓库没有设计令牌，色值是临时对照。样本数据，仅供走查。</p>
-  <main class="shell" id="app" aria-live="polite"></main>
+  <main id="app" aria-live="polite"></main>
   <script>
     const orders = [
       order("SAMPLE-28673", "SAMPLE-MAT-3350-01", "样本物料-灭菌顶头袋", "", "SAMPLE-1008U", "样本客户甲", "完工", "SAMPLE-ROUTE-464", "SAMPLE-BOM-3350-01", "104", "样本车间", "样本仓", "样本/量产订单"),
@@ -194,8 +261,13 @@
       apiModal: null,
       apiPretty: false,
       listOpen: false,
+      listMore: false,
       listPlan: "",
+      listMaterial: "",
       listError: "",
+      toolMore: false,
+      navQuery: "",
+      navHint: "",
       page: 1,
       pageSize: 20,
       morePlan: "",
@@ -247,7 +319,9 @@
       if (["empty", "loading", "failure", "forbidden"].includes(state.mode)) return [];
       const source = (state.mode === "boundary" ? boundaryOrders() : orders).filter((item) => !state.hidden[item.planNo]);
       const keyword = state.listPlan.trim();
-      const filtered = keyword ? source.filter((item) => item.planNo.includes(keyword)) : source;
+      const material = state.listMaterial.trim();
+      let filtered = keyword ? source.filter((item) => item.planNo.includes(keyword)) : source;
+      if (material) filtered = filtered.filter((item) => item.materialNo.includes(material));
       const start = (state.page - 1) * state.pageSize;
       return { all: filtered, page: filtered.slice(start, start + state.pageSize) };
     }
@@ -256,6 +330,16 @@
       return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
     }
 
+    const NAV = [
+      ["list", "生产订单"],
+      ["route", "工艺路线"],
+      ["bom", "物料清单"],
+      ["oplog", "操作日志"],
+      ["apilog", "接口日志"],
+      ["work", "工单"],
+      ["material", "物料主数据"]
+    ];
+
     function render() {
       document.body.classList.toggle("narrow", state.narrow);
       document.querySelectorAll("[data-scene]").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.scene === state.scene)));
@@ -263,7 +347,35 @@
       document.getElementById("viewport").setAttribute("aria-pressed", String(state.narrow));
       document.getElementById("viewport-flag").textContent = state.narrow ? "当前为窄屏" : "当前为桌面";
       const screens = { list: listHtml, route: routeHtml, bom: bomHtml, detail: detailHtml, edit: editHtml, oplog: opHtml, apilog: apiHtml, work: workHtml, material: materialHtml };
-      document.getElementById("app").innerHTML = screens[state.scene]() + (state.apiModal ? modalHtml() : "") + splitHtml() + deleteHtml();
+      document.getElementById("app").innerHTML = shell(state.scene, screens[state.scene]()) + (state.apiModal ? modalHtml() : "") + splitHtml();
+    }
+
+    function shell(screen, inner) {
+      const titles = { list: "生产订单", route: "工艺路线", bom: "物料清单", detail: "订单详情", edit: "编辑生产订单", oplog: "操作日志", apilog: "日志管理", work: "工单", material: "物料主数据" };
+      const title = titles[screen] || "生产订单";
+      const current = screen === "detail" || screen === "edit" ? "list" : screen;
+      const query = state.navQuery.trim();
+      const menu = NAV.filter(([, name]) => !query || name.includes(query)).map(([id, name]) =>
+        `<button type="button" data-act="menu" data-to="${id}" aria-current="${current === id ? "page" : "false"}">${name}</button>`
+      ).join("") || `<p class="nav-hint">没有匹配的菜单</p>`;
+      const tab = screen === "list" ? "" : `<button type="button" class="tab" aria-current="page">${esc(title)}</button><button type="button" class="x" data-act="close-tab" aria-label="关闭页签">×</button>`;
+      return `<div class="frame">
+        <aside class="sider">
+          <div class="brand"><i></i>生产订单</div>
+          <div class="nav-search"><input id="nav-search" aria-label="导航搜索" placeholder="导航搜索" value="${esc(state.navQuery)}"></div>
+          ${state.navHint ? `<p class="nav-hint" id="nav-hint">${esc(state.navHint)}</p>` : ""}
+          <nav class="menu">${menu}</nav>
+          <div class="fav">收藏夹<br><button type="button" data-act="menu" data-to="list">生产订单</button></div>
+        </aside>
+        <div class="main">
+          <div class="navtabs">
+            <button type="button" class="tab" data-act="home" ${screen === "list" ? 'aria-current="page"' : ""}>首页</button>
+            ${tab}
+            <div class="nav-tools"><span>搜索</span><span>消息</span><span>设置</span><span>样本用户甲</span></div>
+          </div>
+          <div class="content"><div class="panel" data-screen="${screen}">${inner}</div></div>
+        </div>
+      </div>`;
     }
 
     function banner() {
@@ -274,7 +386,7 @@
 
     function gate(emptyText, title) {
       if (state.mode === "loading") {
-        return '<div class="state" id="loading"><div class="spinner"></div><p>正在加载' + title + '</p><button type="button" class="btn-green" id="finish-loading" data-act="finish-loading">结束加载</button></div>';
+        return '<div class="state" id="loading"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><p>正在加载' + title + '</p><button type="button" class="btn-green" id="finish-loading" data-act="finish-loading">结束加载</button></div>';
       }
       if (state.mode === "failure") {
         return '<div class="state" id="failure"><p>' + title + '没有加载出来</p><button type="button" class="btn-green" id="retry" data-act="retry">重试</button></div>';
@@ -283,19 +395,25 @@
         return '<div class="state" id="forbidden"><p>当前账号不能查看' + title + "</p></div>";
       }
       if (state.mode === "empty") {
-        return '<div class="state" id="empty"><p>' + emptyText + "</p></div>";
+        return '<div class="state" id="empty"><div class="empty-art"></div><p>' + emptyText + "</p></div>";
       }
       return "";
     }
 
-    function backButton() {
-      return '<button type="button" class="link back" data-act="back-list">返回订单列表</button>';
+    function crumb(current) {
+      return `<p class="crumb"><button type="button" data-act="back-list">生产订单</button> / ${esc(current)}</p>`;
+    }
+
+    function pageFoot() {
+      return '<div class="page-foot"><button type="button" class="btn" data-act="back-list">返回</button></div>';
     }
 
     function listHtml() {
       const packed = listRows();
       const rows = packed.page || [];
       const total = packed.all ? packed.all.length : 0;
+      state.total = total;
+      const pages = Math.max(1, Math.ceil(total / state.pageSize) || 1);
       const body = rows.map((item) => `<tr>
         <td data-label="选择"><input type="checkbox" data-act="check" data-plan="${item.planNo}" ${state.checked[item.planNo] ? "checked" : ""}></td>
         <td data-label="计划号">${esc(item.planNo)}</td>
@@ -316,38 +434,60 @@
           <button type="button" class="link" data-act="more" data-plan="${item.planNo}">更多操作</button>
         </td>
       </tr>
-      ${state.morePlan === item.planNo ? `<tr class="more-row"><td colspan="13"><div class="actions" id="more-menu">
-          <button type="button" class="btn" data-act="delete" data-plan="${item.planNo}">删除</button>
-          <button type="button" class="btn" data-act="route" data-plan="${item.planNo}">查看工艺路线</button>
-          <button type="button" class="btn" data-act="bom" data-plan="${item.planNo}">查看BOM</button>
-          <button type="button" class="btn" data-act="oplog" data-plan="${item.planNo}">查看操作日志</button>
-          <button type="button" class="btn" data-act="apilog" data-plan="${item.planNo}">查看接口日志</button>
-          <button type="button" class="btn" data-act="work" data-plan="${item.planNo}">查看工单</button>
-          <button type="button" class="btn" data-act="material" data-plan="${item.planNo}">查看物料主数据</button>
+      ${state.morePlan === item.planNo ? `<tr class="more-row"><td colspan="13"><div class="drop" id="more-menu">
+          <span class="pop"><button type="button" class="link danger" data-act="delete" data-plan="${item.planNo}">删除</button>
+            ${state.deletePlan === item.planNo ? `<div class="bubble" id="delete-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title"><p id="delete-title">确定从列表隐藏计划号 ${esc(item.planNo)}？这是样本操作，重置后会恢复。</p><div class="dialog-actions"><button type="button" class="btn" data-act="delete-cancel">取消</button><button type="button" class="btn-danger" data-act="delete-confirm" data-plan="${item.planNo}">确定</button></div></div>` : ""}
+          </span>
+          <button type="button" data-act="route" data-plan="${item.planNo}">查看工艺路线</button>
+          <button type="button" data-act="bom" data-plan="${item.planNo}">查看BOM</button>
+          <button type="button" data-act="oplog" data-plan="${item.planNo}">查看操作日志</button>
+          <button type="button" data-act="apilog" data-plan="${item.planNo}">查看接口日志</button>
+          <button type="button" data-act="work" data-plan="${item.planNo}">查看工单</button>
+          <button type="button" data-act="material" data-plan="${item.planNo}">查看物料主数据</button>
         </div></td></tr>` : ""}`).join("");
       const blocked = gate("当前没有生产订单", "生产订单");
-      return `<section class="card" data-screen="list">${banner()}
+      const extras = ["勾选导出", "齐套检查", "BOM核对", "套单关联", "导入波次", "波次拆分"];
+      const pageBtns = Array.from({ length: pages }, (_, index) => {
+        const page = index + 1;
+        return `<button type="button" class="btn" data-act="page" data-page="${page}" ${page === state.page ? 'aria-current="page"' : ""}>${page}</button>`;
+      }).join("");
+      return `${banner()}
         <h1>生产订单</h1>
         <p class="sim">模拟规则：查看、编辑、拆分留在行上。删除、查看工艺路线、查看BOM、查看操作日志、查看接口日志、查看工单、查看物料主数据放在「更多操作」。</p>
+        <form id="list-form" class="filterbar">
+          <span>筛选</span>
+          <div class="grow">
+            <label>计划号<input id="list-plan" name="plan" value="${esc(state.listPlan)}" placeholder="请输入计划号"></label>
+            ${state.listMore ? `<label>物料号<input id="list-material" name="material" value="${esc(state.listMaterial)}" placeholder="请输入物料号"></label>` : ""}
+          </div>
+          <div class="filter-actions">
+            <button type="button" class="btn" data-act="list-more">${state.listMore ? "收起" : "更多"}</button>
+            <button type="button" class="btn" data-act="list-reset">重置</button>
+            <button class="btn-green" type="submit">搜索</button>
+          </div>
+        </form>
+        ${state.listError ? `<p class="error" id="list-error">${esc(state.listError)}</p>` : ""}
         <div class="toolbar">
-          ${["新增", "关闭", "开启", "批量编辑", "勾选导出", "齐套检查", "BOM核对", "套单关联", "导入波次", "波次拆分"].map((name) => `<button type="button" class="${name === "新增" ? "btn-green" : "btn"}" data-act="toolbar" data-name="${name}">${name}</button>`).join("")}
-          <button type="button" class="btn" id="toggle-filter" data-act="toggle-filter">筛选</button>
+          <button type="button" class="btn-green" data-act="toolbar" data-name="新增">新增</button>
+          <button type="button" class="btn-line" data-act="toolbar" data-name="关闭">关闭</button>
+          <button type="button" class="btn-line" data-act="toolbar" data-name="开启">开启</button>
+          <button type="button" class="btn-line" data-act="toolbar" data-name="批量编辑">批量编辑</button>
+          <span class="pop"><button type="button" class="btn-line" data-act="tool-more">更多</button>
+            ${state.toolMore ? `<div class="menu-pop" id="tool-menu">${extras.map((name) => `<button type="button" data-act="toolbar" data-name="${name}">${name}</button>`).join("")}</div>` : ""}
+          </span>
         </div>
-        ${state.listOpen ? `<form id="list-form" class="filters">
-          <label>计划号<input id="list-plan" name="plan" value="${esc(state.listPlan)}" placeholder="请输入计划号"></label>
-          <div class="actions"><button class="btn-green" type="submit">搜索</button><button class="btn" type="button" data-act="list-reset">重置</button></div>
-          ${state.listError ? `<p class="error" id="list-error">${esc(state.listError)}</p>` : ""}
-        </form>` : ""}
-        ${blocked || `<div class="table-wrap"><table>
-          <thead><tr><th></th><th>计划号</th><th>物料号</th><th>发布状态</th><th>计划状态</th><th>生产状态</th><th>物料描述</th><th>款号</th><th>生产批号</th><th>客户</th><th>工艺路线号</th><th>BOM号</th><th class="ops">操作</th></tr></thead>
-          <tbody id="order-list">${body || '<tr><td colspan="13">没有符合条件的生产订单</td></tr>'}</tbody>
+        <div class="table-wrap"><table>
+          <thead><tr><th></th><th>计划号</th><th>物料号</th><th>发布状态</th><th>计划状态</th><th>生产状态</th><th>物料描述</th><th>款号</th><th>生产批号</th><th>客户</th><th>工艺路线号</th><th>BOM号</th><th>操作</th></tr></thead>
+          <tbody id="order-list">${blocked ? `<tr><td colspan="13">${blocked}</td></tr>` : (body || '<tr><td colspan="13"><div class="state" id="filter-empty"><div class="empty-art"></div><p>没有符合条件的生产订单</p></div></td></tr>')}</tbody>
         </table></div>
-        <div class="pager"><span>共 ${total} 条（样本）</span>
-          <button type="button" class="btn" data-act="page" data-page="${Math.max(1, state.page - 1)}">上一页</button>
-          <span>第 ${state.page} 页</span>
-          <button type="button" class="btn" data-act="page" data-page="${state.page + 1}">下一页</button>
-        </div>`}
-      </section>`;
+        <div class="pager"><span>共 ${blocked ? 0 : total} 项数据</span>
+          <div class="pages">
+            <label>每页<select id="page-size" aria-label="每页条数">${[10, 20, 50].map((size) => `<option value="${size}" ${size === state.pageSize ? "selected" : ""}>${size} 条/页</option>`).join("")}</select></label>
+            <button type="button" class="btn" data-act="page" data-page="${state.page - 1}">上一页</button>
+            ${blocked ? "" : pageBtns}
+            <button type="button" class="btn" data-act="page" data-page="${state.page + 1}">下一页</button>
+          </div>
+        </div>`;
     }
 
     function routeHtml() {
@@ -370,18 +510,18 @@
         <td data-label="备注">样本</td>
         <td data-label="操作"><button type="button" class="link" data-act="hold" data-name="工序编辑">编辑</button></td>
       </tr>`).join("");
-      return `<section class="card" data-screen="route">${banner()}${backButton()}<h1>工艺路线</h1>
+      return `${banner()}${crumb("工艺路线")}<h1>工艺路线</h1>
         <div class="grid-3">
           ${readonly("计划号", item.planNo)}${readonly("物料号", item.materialNo)}${readonly("物料描述", item.desc, true)}
           ${readonly("工艺路线编号", item.routeNo)}${readonly("版本号", item.version)}${readonly("起始日期", state.mode === "boundary" ? "2026-10-09 00:00" : "")}
           ${readonly("截止日期", state.mode === "boundary" ? "2026-10-09 23:59" : "")}
-          <label class="span-2">备注<input readonly value="样本备注"></label>
+          ${readonly("备注", "样本备注", true)}
         </div>
         <div class="section"><h1>工序信息</h1>
           <button type="button" class="btn" data-act="sync">同步</button>
           ${state.synced ? '<p class="ok" id="sync-note">样本：已记下一次同步，没有连接外部系统。可打开接口日志查看这条样本。</p>' : ""}
           ${blocked || `<div class="table-wrap"><table><thead><tr><th>序号</th><th>工序名称</th><th>工序代码</th><th>工序数量</th><th>工序序号</th><th>ERP工序编码</th><th>ERP工序描述</th><th>ERP工作中心</th><th>单位</th><th>备注</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table></div>`}
-        </div></section>`;
+        </div>${pageFoot()}`;
     }
 
     function bomHtml() {
@@ -401,27 +541,27 @@
         <td data-label="有效期起">${state.mode === "boundary" ? "2026-10-09 00:00" : "待确认"}</td>
         <td data-label="有效期止">${state.mode === "boundary" ? "2026-10-09 23:59" : "待确认"}</td>
       </tr>`).join("");
-      return `<section class="card" data-screen="bom">${banner()}${backButton()}<h1>物料清单</h1>
-        <p class="sim">模拟规则：SAP 投料数量为 0 时标黄。有效期起止在截图里被裁切，未确认的显示「待确认」。</p>
+      return `${banner()}${crumb("物料清单")}<h1>物料清单</h1>
+        <p class="sim">模拟规则：SAP 投料数量为 0 时用警告浅底标出。有效期起止在截图里被裁切，未确认的显示「待确认」。</p>
         <div class="grid-3">
           ${readonly("计划号", item.planNo)}${readonly("物料清单编码", item.bomNo)}${readonly("版本", item.version)}
           ${readonly("报工数量", item.qty)}${readonly("订单数量", item.qty)}${readonly("物料号", item.materialNo)}
           ${readonly("物料描述", item.desc, true)}
         </div>
         ${blocked || `<div class="table-wrap"><table><thead><tr><th>序号</th><th>物料号</th><th>物料名称</th><th>数量</th><th>单位</th><th>单位名称</th><th>可锁定数量</th><th>单位数量</th><th>WIN+投料数量</th><th>SAP投料数量</th><th>制成率</th><th>工序编号</th><th>工序名称</th><th>有效期起</th><th>有效期止</th></tr></thead><tbody>${rows}</tbody></table></div>`}
-      </section>`;
+        ${pageFoot()}`;
     }
 
     function detailHtml() {
       const item = currentOrder();
       const blocked = gate("没有读到这张生产订单", "订单详情");
-      if (blocked) return `<section class="card" data-screen="detail">${banner()}${backButton()}<h1>订单详情</h1>${blocked}</section>`;
+      if (blocked) return `${banner()}${crumb("订单详情")}<h1>订单详情</h1>${blocked}${pageFoot()}`;
       const longWarehouse = state.mode === "boundary" ? "样本仓-名称超长用于走查查看态字段不被截断到无法辨认" : item.warehouse;
-      return `<section class="card" data-screen="detail">${banner()}${backButton()}<h1>订单详情</h1>
-        <p class="sim">模拟规则：查看态只读。绿色底表示截图里已填写的字段。APS 其他属性页内容未在截图中出现，显示待确认。工艺路线、BOM、日志、工单和物料主数据从列表的「更多操作」进入。</p>
+      return `${banner()}${crumb("订单详情")}<h1>订单详情</h1>
+        <p class="sim">模拟规则：查看态只读。必填字段用危险色星号。APS 其他属性页内容未在截图中出现，显示待确认。工艺路线、BOM、日志、工单和物料主数据从列表的「更多操作」进入。</p>
         <div class="grid-3">
-          ${field("物料号", item.materialNo, true)}
-          <div class="actions"><button type="button" class="btn" data-act="hold" data-name="选择物料">选择</button></div>
+          ${readonly("计划号", item.planNo)}
+          <div class="kv req"><span>物料号</span><b>${esc(item.materialNo)}</b><button type="button" class="btn" data-act="hold" data-name="选择物料">选择</button></div>
           ${readonly("物料描述", item.desc)}
           ${readonly("款号", item.styleNo || "")}
           ${field("计划类型", item.planType, true)}
@@ -437,7 +577,7 @@
           ${field("优先级", item.priority, true)}
           ${field("仓库", longWarehouse, true)}
           ${readonly("原料供应商", "")}
-          <label class="span-2">备注<input readonly value=""></label>
+          ${readonly("备注", "", true)}
         </div>
         <div class="tabs" role="tablist">
           <button type="button" data-act="tab" data-tab="base" aria-pressed="${state.tab === "base"}">常规信息</button>
@@ -454,7 +594,7 @@
           ${readonly("客户编号", "")}${readonly("客户名称", item.customer)}${readonly("委托工厂", "")}
           ${readonly("客户批号", "")}${readonly("客户订单编号", "")}${readonly("客户生产日期", "")}
         </div></div>`}
-      </section>`;
+        ${pageFoot()}`;
     }
 
     function fieldTable(fields) {
@@ -468,44 +608,41 @@
     function editHtml() {
       const item = currentOrder();
       const blocked = gate("没有读到这张生产订单", "编辑");
-      if (blocked) return `<section class="card" data-screen="edit">${banner()}${backButton()}<h1>编辑生产订单</h1>${blocked}</section>`;
-      return `<section class="card" data-screen="edit">${banner()}${backButton()}<h1>编辑生产订单</h1>
+      if (blocked) return `${banner()}${crumb("编辑生产订单")}<h1>编辑生产订单</h1>${blocked}${pageFoot()}`;
+      return `${banner()}${crumb("编辑生产订单")}<h1>编辑生产订单</h1>
         <p>计划号 ${esc(item.planNo)}（样本）</p>
-        <p class="sim">模拟规则：一次保存只写一条操作日志。改了几个字段，这条日志里就列出几行变更前、变更后。</p>
-        <form id="edit-form" class="grid-3">
-          <label class="req">数量<input id="edit-qty" name="qty" value="${esc(item.qty)}"></label>
-          <label class="req">优先级<input id="edit-priority" name="priority" value="${esc(item.priority)}"></label>
-          <label class="req">仓库<input id="edit-warehouse" name="warehouse" value="${esc(item.warehouse)}"></label>
-          <label class="span-2">备注<input id="edit-remark" name="remark" value="${esc(item.remark)}"></label>
+        <p class="sim">模拟规则：一次保存只写一条操作日志。改了几个字段，这条日志里就列出几行变更前、变更后。取消回到列表，已填内容不保留，再次进入仍是当前订单值。</p>
+        <form id="edit-form" class="filters">
+          <label class="req"><span>数量</span><input id="edit-qty" name="qty" value="${esc(item.qty)}"></label>
+          <label class="req"><span>优先级</span><input id="edit-priority" name="priority" value="${esc(item.priority)}"></label>
+          <label class="req"><span>仓库</span><input id="edit-warehouse" name="warehouse" value="${esc(item.warehouse)}"></label>
+          <label><span>备注</span><input id="edit-remark" name="remark" value="${esc(item.remark)}"></label>
           ${state.editError ? `<p class="error" id="edit-error">${esc(state.editError)}</p>` : ""}
-          <div class="actions"><button class="btn-green" type="submit">保存</button><button class="btn" type="button" data-act="back-list">取消</button></div>
-        </form>
-      </section>`;
+          <div class="dialog-actions"><button class="btn" type="button" data-act="back-list">取消</button><button class="btn-green" type="submit">保存</button></div>
+        </form>`;
     }
 
     function workHtml() {
       const item = currentOrder();
       const blocked = gate("这张生产订单还没有工单", "工单");
-      return `<section class="card" data-screen="work">${banner()}${backButton()}<h1>工单</h1>
+      return `${banner()}${crumb("工单")}<h1>工单</h1>
         <p class="sim">模拟规则：工单号和工单状态没有出现在现有截图里，显示待确认。</p>
         ${blocked || `<div class="grid-3">
           ${readonly("计划号", item.planNo)}${readonly("物料号", item.materialNo)}${readonly("物料描述", item.desc, true)}
           ${readonly("数量", item.qty)}${readonly("生产批号", item.batch)}
           ${readonly("工单号", "待确认")}${readonly("工单状态", "待确认")}
-        </div>`}
-      </section>`;
+        </div>`}${pageFoot()}`;
     }
 
     function materialHtml() {
       const item = currentOrder();
       const blocked = gate("没有读到物料主数据", "物料主数据");
-      return `<section class="card" data-screen="material">${banner()}${backButton()}<h1>物料主数据</h1>
+      return `${banner()}${crumb("物料主数据")}<h1>物料主数据</h1>
         <p class="sim">模拟规则：只展示订单上已经出现的物料号、描述和单位。物料组、规格未在截图中出现，显示待确认。</p>
         ${blocked || `<div class="grid-3">
           ${readonly("物料号", item.materialNo)}${readonly("物料描述", item.desc, true)}${readonly("单位", item.unit)}
           ${readonly("物料组", "待确认")}${readonly("规格", "待确认")}
-        </div>`}
-      </section>`;
+        </div>`}${pageFoot()}`;
     }
 
     function opHtml() {
@@ -531,43 +668,32 @@
       </article>`).join("");
       if (state.opDetail && !blocked) {
         const line = rows.find((entry) => entry.id === state.opDetail) || rows[0];
-        return `<section class="card" data-screen="oplog-detail">${banner()}${backButton()}<h1>操作日志</h1>
+        return `<div data-screen="oplog-detail">${banner()}${crumb("操作日志")}<h1>操作日志</h1>
           <p id="detail-actor">${esc(line.actor)} 在 ${esc(line.time)} ${esc(line.action)}了 ${line.fields.length} 个字段</p>
           <div class="table-wrap">${fieldTable(line.fields)}</div>
-          <button type="button" class="btn" data-act="op-back">返回列表</button>
-        </section>`;
+          <div class="page-foot"><button type="button" class="btn" data-act="op-back">返回</button></div>
+        </div>`;
       }
-      return `<section class="card" data-screen="oplog">${banner()}${backButton()}<h1>操作日志</h1>
+      return `${banner()}${crumb("操作日志")}<h1>操作日志</h1>
         <p>生产订单 ${esc(item.planNo)}（样本）</p>
         <p class="sim">模拟规则：一条日志是一次更新。同一次改了多个字段时，字段、变更前、变更后列在这一条下面。</p>
-        ${blocked || (blocks ? `<div id="op-list">${blocks}</div>` : '<div class="state" id="op-empty"><p>这张生产订单还没有操作日志</p></div>')}
-      </section>`;
+        ${blocked || (blocks ? `<div id="op-list">${blocks}</div>` : '<div class="state" id="op-empty"><div class="empty-art"></div><p>这张生产订单还没有操作日志</p></div>')}
+        ${pageFoot()}`;
     }
 
     function splitHtml() {
       if (!state.splitPlan) return "";
       const item = orders.find((entry) => entry.planNo === state.splitPlan);
       if (!item) return "";
-      return `<div class="mask" id="split-dialog"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="split-title">
-        <h1 id="split-title">拆分</h1>
+      return `<div class="mask" id="split-dialog"><div class="dialog sm" role="dialog" aria-modal="true" aria-labelledby="split-title">
+        <div class="dialog-head"><h1 id="split-title">拆分</h1><button type="button" class="btn" data-act="split-cancel">关闭</button></div>
         <p>计划号 ${esc(item.planNo)}，当前数量 ${esc(item.qty)}（样本）</p>
-        <form id="split-form">
-          <label class="req">拆出数量<input id="split-qty" name="qty" value=""></label>
+        <p class="sim">模拟规则：取消或按 Esc 关闭后，拆出数量清空。确定后只写一条操作日志。</p>
+        <form id="split-form" class="filters">
+          <label class="req"><span>拆出数量</span><input id="split-qty" name="qty" value=""></label>
           ${state.splitError ? `<p class="error" id="split-error">${esc(state.splitError)}</p>` : ""}
-          <div class="actions"><button class="btn-green" type="submit">确定</button><button class="btn" type="button" data-act="split-cancel">取消</button></div>
+          <div class="dialog-actions"><button class="btn" type="button" data-act="split-cancel">取消</button><button class="btn-green" type="submit">确定</button></div>
         </form>
-      </div></div>`;
-    }
-
-    function deleteHtml() {
-      if (!state.deletePlan) return "";
-      return `<div class="mask" id="delete-dialog"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="delete-title">
-        <h1 id="delete-title">删除</h1>
-        <p>确定从列表隐藏计划号 ${esc(state.deletePlan)}？这是样本操作，重置后会恢复。</p>
-        <div class="actions">
-          <button type="button" class="btn-green" data-act="delete-confirm" data-plan="${state.deletePlan}">确定</button>
-          <button type="button" class="btn" data-act="delete-cancel">取消</button>
-        </div>
       </div></div>`;
     }
 
@@ -575,15 +701,15 @@
       const form = state.apiForm;
       const blocked = gate("没有符合条件的接口日志", "接口日志");
       const fields = `
-        <label class="req">开始时间<input id="api-start" type="datetime-local" name="start" value="${esc(form.start)}"></label>
-        <label class="req">结束时间<input id="api-end" type="datetime-local" name="end" value="${esc(form.end)}"></label>
-        <label>模块<select name="module"><option value="">请选择</option><option ${form.module === "计划工单" ? "selected" : ""}>计划工单</option><option ${form.module === "生产入库" ? "selected" : ""}>生产入库</option><option ${form.module === "报工模块" ? "selected" : ""}>报工模块</option></select></label>
-        <label>操作<input name="op" value="${esc(form.op)}" placeholder="请输入操作"></label>
-        <label>发送方URL<input name="sender" value="${esc(form.sender)}" placeholder="请输入发送方URL"></label>
-        <label>请求体<input id="api-body" name="body" value="${esc(form.body)}" placeholder="请输入计划号"></label>
-        <label>响应体<input name="response" value="${esc(form.response)}" placeholder="请输入响应体"></label>
-        <label>traceId<input name="trace" value="${esc(form.trace)}" placeholder="请输入traceId"></label>
-        <label>异常信息<input name="exception" value="${esc(form.exception)}" placeholder="请输入异常信息"></label>`;
+        <label class="req"><span>开始时间</span><input id="api-start" type="datetime-local" name="start" value="${esc(form.start)}"></label>
+        <label class="req"><span>结束时间</span><input id="api-end" type="datetime-local" name="end" value="${esc(form.end)}"></label>
+        <label><span>模块</span><select name="module"><option value="">请选择</option><option ${form.module === "计划工单" ? "selected" : ""}>计划工单</option><option ${form.module === "生产入库" ? "selected" : ""}>生产入库</option><option ${form.module === "报工模块" ? "selected" : ""}>报工模块</option></select></label>
+        <label><span>操作</span><input name="op" value="${esc(form.op)}" placeholder="请输入操作"></label>
+        <label><span>发送方URL</span><input name="sender" value="${esc(form.sender)}" placeholder="请输入发送方URL"></label>
+        <label><span>请求体</span><input id="api-body" name="body" value="${esc(form.body)}" placeholder="请输入计划号"></label>
+        <label><span>响应体</span><input name="response" value="${esc(form.response)}" placeholder="请输入响应体"></label>
+        <label><span>traceId</span><input name="trace" value="${esc(form.trace)}" placeholder="请输入traceId"></label>
+        <label><span>异常信息</span><input name="exception" value="${esc(form.exception)}" placeholder="请输入异常信息"></label>`;
       let result = "";
       if (!blocked && form.searched) {
         const rows = filterApi();
@@ -601,19 +727,24 @@
           <td data-label="操作"><button type="button" class="link" data-act="api-view" data-id="${line.id}">查看</button></td>
         </tr>`).join("")}</tbody></table></div>` : '<div class="state" id="api-empty"><p>没有符合条件的接口日志</p></div>';
       }
-      return `<section class="card" data-screen="apilog">${banner()}${backButton()}<h1>日志管理</h1>
-        <p class="sim">模拟规则：从订单进入时，把计划号填进请求体。地址、IP、traceId 都是样本，不发起请求。开始时间和结束时间必填。</p>
+      const visible = form.collapsed ? `
+        <label class="req"><span>开始时间</span><input id="api-start" type="datetime-local" name="start" value="${esc(form.start)}"></label>
+        <label class="req"><span>结束时间</span><input id="api-end" type="datetime-local" name="end" value="${esc(form.end)}"></label>
+        <label><span>请求体</span><input id="api-body" name="body" value="${esc(form.body)}" placeholder="请输入计划号"></label>` : fields;
+      return `${banner()}${crumb("日志管理")}<h1>日志管理</h1>
+        <p class="sim">模拟规则：从订单进入时，把计划号填进请求体。地址、IP、traceId 都是样本，不发起请求。开始时间和结束时间必填。重置清空条件，已输入内容不保留。</p>
         <div class="toolbar"><button type="button" class="btn-green" data-act="api-refresh">刷新</button></div>
-        <form id="api-form" class="filters">${form.collapsed ? "" : fields}
-          <div class="actions">
-            <button type="button" class="link" data-act="api-collapse">${form.collapsed ? "展开" : "收起"}</button>
+        <form id="api-form" class="filters wide">${visible}
+          <div class="dialog-actions">
+            <button type="button" class="btn" data-act="api-collapse">${form.collapsed ? "更多" : "收起"}</button>
             <button type="button" class="btn" data-act="api-reset">重置</button>
             <button type="submit" class="btn-green" id="api-search">搜索</button>
           </div>
           ${form.error ? `<p class="error" id="api-error">${esc(form.error)}</p>` : ""}
         </form>
-        ${blocked || result}
-      </section>`;
+        ${blocked || result || '<div class="state"><p>填写开始时间和结束时间后搜索</p></div>'}
+        ${!blocked && form.searched ? `<div class="pager"><span>共 ${filterApi().length} 项数据</span></div>` : ""}
+        ${pageFoot()}`;
     }
 
     function filterApi() {
@@ -642,19 +773,19 @@
           ${readonly("模块", line.module)}${readonly("具体操作", line.action)}${readonly("URL", line.url)}
           ${readonly("IP", line.ip)}${readonly("traceId", line.trace)}${readonly("异常信息", line.exception)}
         </div>
-        <label>请求头<textarea readonly>${esc(line.head)}</textarea></label>
-        <label>请求体<textarea readonly>${esc(line.body)}</textarea></label>
-        <label>响应体<textarea readonly>${esc(line.resp)}</textarea></label>
+        <label class="form-row"><span>请求头</span><textarea readonly>${esc(line.head)}</textarea></label>
+        <label class="form-row"><span>请求体</span><textarea readonly>${esc(line.body)}</textarea></label>
+        <label class="form-row"><span>响应体</span><textarea readonly>${esc(line.resp)}</textarea></label>
         ${pretty}
-        <div class="actions"><button type="button" class="btn-green" data-act="json">JSON预览</button><button type="button" class="btn" data-act="modal-close">取消</button></div>
+        <div class="dialog-actions"><button type="button" class="btn" data-act="modal-close">取消</button><button type="button" class="btn-green" data-act="json">JSON预览</button></div>
       </div></div>`;
     }
 
     function readonly(label, value, wide) {
-      return `<label class="${wide ? "span-2" : ""}">${label}<input readonly value="${esc(value)}"></label>`;
+      return `<div class="kv${wide ? " span-2" : ""}"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;
     }
-    function field(label, value, filled) {
-      return `<label class="req">${label}<input readonly class="${filled ? "fill" : ""}" value="${esc(value)}"></label>`;
+    function field(label, value) {
+      return `<div class="kv req"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;
     }
     function linkField(label, value, act, plan) {
       return `<label class="req">${label}<button type="button" class="link" data-act="${act}" data-plan="${plan}">${esc(value)}</button></label>`;
@@ -678,15 +809,9 @@
 
     function readApiForm(form) {
       const data = new FormData(form);
-      state.apiForm.start = data.get("start") || "";
-      state.apiForm.end = data.get("end") || "";
-      state.apiForm.module = data.get("module") || "";
-      state.apiForm.op = data.get("op") || "";
-      state.apiForm.sender = data.get("sender") || "";
-      state.apiForm.body = data.get("body") || "";
-      state.apiForm.response = data.get("response") || "";
-      state.apiForm.trace = data.get("trace") || "";
-      state.apiForm.exception = data.get("exception") || "";
+      ["start", "end", "module", "op", "sender", "body", "response", "trace", "exception"].forEach((key) => {
+        if (form.elements.namedItem(key)) state.apiForm[key] = data.get(key) || "";
+      });
     }
 
     function validateApi() {
@@ -697,11 +822,53 @@
     }
 
     document.getElementById("app").addEventListener("click", (event) => {
+      if (event.target.id === "split-dialog") {
+        state.splitPlan = "";
+        state.splitError = "";
+        render();
+        return;
+      }
+      if (event.target.id === "modal") {
+        state.apiModal = null;
+        render();
+        return;
+      }
       const target = event.target.closest("[data-act]");
       if (!target) return;
       const act = target.dataset.act;
+      if (act === "menu" || act === "home" || act === "close-tab") {
+        const to = act === "menu" ? target.dataset.to : "list";
+        state.opDetail = null;
+        state.apiModal = null;
+        state.notice = "";
+        state.toolMore = false;
+        if (to === "list") {
+          state.scene = "list";
+          render();
+        } else {
+          openOrder(state.planNo, to);
+        }
+        return;
+      }
       if (act === "more") {
         state.morePlan = state.morePlan === target.dataset.plan ? "" : target.dataset.plan;
+        if (!state.morePlan) state.deletePlan = "";
+        render();
+        return;
+      }
+      if (act === "tool-more") {
+        state.toolMore = !state.toolMore;
+        render();
+        return;
+      }
+      if (act === "list-more") {
+        const form = document.getElementById("list-form");
+        if (form) {
+          state.listPlan = new FormData(form).get("plan") || "";
+          const material = new FormData(form).get("material");
+          if (material !== null) state.listMaterial = material;
+        }
+        state.listMore = !state.listMore;
         render();
         return;
       }
@@ -738,7 +905,7 @@
       }
       if (act === "delete") {
         state.deletePlan = target.dataset.plan;
-        state.morePlan = "";
+        state.morePlan = target.dataset.plan;
         render();
         return;
       }
@@ -750,6 +917,7 @@
       if (act === "delete-confirm") {
         state.hidden[target.dataset.plan] = true;
         state.deletePlan = "";
+        state.morePlan = "";
         state.notice = "样本：该订单已从列表隐藏。点击重置可恢复。";
         render();
         return;
@@ -764,6 +932,7 @@
       }
       if (act === "hold" || act === "toolbar") {
         const selected = Object.values(state.checked).some(Boolean);
+        state.toolMore = false;
         if (["关闭", "开启", "批量编辑", "勾选导出"].includes(target.dataset.name) && !selected) {
           state.notice = "请先勾选生产订单。";
         } else {
@@ -772,20 +941,20 @@
         render();
         return;
       }
-      if (act === "toggle-filter") {
-        state.listOpen = !state.listOpen;
-        render();
-        return;
-      }
       if (act === "list-reset") {
         state.listPlan = "";
+        state.listMaterial = "";
         state.listError = "";
         state.page = 1;
         render();
         return;
       }
       if (act === "page") {
-        state.page = Number(target.dataset.page);
+        const pages = Math.max(1, Math.ceil((state.total || 0) / state.pageSize) || 1);
+        const next = Number(target.dataset.page);
+        if (next < 1) state.notice = "已经是第一页";
+        else if (next > pages) state.notice = "已经是最后一页";
+        else { state.page = next; state.notice = ""; }
         render();
         return;
       }
@@ -828,6 +997,8 @@
         return;
       }
       if (act === "api-collapse") {
+        const form = document.getElementById("api-form");
+        if (form) readApiForm(form);
         state.apiForm.collapsed = !state.apiForm.collapsed;
         render();
         return;
@@ -841,6 +1012,8 @@
         return;
       }
       if (act === "api-refresh") {
+        const form = document.getElementById("api-form");
+        if (form) readApiForm(form);
         state.apiForm.error = validateApi();
         state.apiForm.searched = !state.apiForm.error;
         render();
@@ -925,20 +1098,24 @@
         return;
       }
       if (event.target.id === "list-form") {
-        const value = new FormData(event.target).get("plan") || "";
-        if (value.trim() === "" && value.length > 0) {
-          state.listError = "请输入计划号";
+        const data = new FormData(event.target);
+        const value = data.get("plan") || "";
+        const material = data.get("material");
+        if ((value.trim() === "" && value.length > 0) || (material !== null && material.trim() === "" && material.length > 0)) {
+          state.listError = value.trim() === "" && value.length > 0 ? "请输入计划号" : "请输入物料号";
           state.listPlan = value;
+          if (material !== null) state.listMaterial = material;
         } else {
           state.listError = "";
           state.listPlan = value.trim();
+          state.listMaterial = material === null ? state.listMaterial : material.trim();
           state.page = 1;
         }
         render();
         return;
       }
       if (event.target.id === "api-form") {
-        if (!state.apiForm.collapsed) readApiForm(event.target);
+        readApiForm(event.target);
         state.apiForm.error = validateApi();
         state.apiForm.searched = !state.apiForm.error;
         render();
@@ -970,9 +1147,15 @@
       state.apiModal = null;
       state.apiPretty = false;
       state.listOpen = false;
+      state.listMore = false;
       state.listPlan = "";
+      state.listMaterial = "";
       state.listError = "";
+      state.toolMore = false;
+      state.navQuery = "";
+      state.navHint = "";
       state.page = 1;
+      state.pageSize = 20;
       state.checked = {};
       state.morePlan = "";
       state.editError = "";
@@ -1006,10 +1189,69 @@
         else if (state.splitPlan) { state.splitPlan = ""; state.splitError = ""; }
         else if (state.deletePlan) state.deletePlan = "";
         else if (state.opDetail) state.opDetail = null;
-        else if (state.morePlan) state.morePlan = "";
+        else if (state.toolMore) state.toolMore = false;
+        else if (state.morePlan) { state.morePlan = ""; state.deletePlan = ""; }
         else if (state.notice) state.notice = "";
         else return;
         render();
+      }
+    });
+    document.getElementById("app").addEventListener("change", (event) => {
+      if (event.target.id === "page-size") {
+        state.pageSize = Number(event.target.value);
+        state.page = 1;
+        state.notice = "每页 " + state.pageSize + " 条（样本）";
+        render();
+      }
+    });
+    document.getElementById("app").addEventListener("input", (event) => {
+      if (event.target.id !== "nav-search") return;
+      state.navQuery = event.target.value;
+      const query = state.navQuery.trim();
+      if (!query && state.navQuery.length) {
+        state.navHint = "请输入菜单名称";
+      } else if (query && !NAV.some(([, name]) => name.includes(query))) {
+        state.navHint = "没有匹配的菜单";
+      } else {
+        state.navHint = "";
+      }
+      document.querySelectorAll(".menu button").forEach((button) => {
+        button.hidden = Boolean(query) && !button.textContent.includes(query);
+      });
+      let hint = document.getElementById("nav-hint");
+      if (state.navHint) {
+        if (!hint) {
+          hint = document.createElement("p");
+          hint.id = "nav-hint";
+          hint.className = "nav-hint";
+          event.target.parentElement.after(hint);
+        }
+        hint.textContent = state.navHint;
+      } else if (hint) {
+        hint.remove();
+      }
+    });
+    document.getElementById("app").addEventListener("keydown", (event) => {
+      if (event.target.id !== "nav-search" || event.key !== "Enter") return;
+      event.preventDefault();
+      const query = state.navQuery.trim();
+      if (!query) {
+        state.navHint = state.navQuery.length ? "请输入菜单名称" : "";
+        render();
+        return;
+      }
+      const hit = NAV.find(([, name]) => name.includes(query));
+      if (!hit) {
+        state.navHint = "没有匹配的菜单";
+        render();
+        return;
+      }
+      state.navHint = "";
+      if (hit[0] === "list") {
+        state.scene = "list";
+        render();
+      } else {
+        openOrder(state.planNo, hit[0]);
       }
     });
     render();
