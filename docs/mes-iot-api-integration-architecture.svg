@@ -1,0 +1,339 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1080" viewBox="0 0 1800 1080">
+
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#04171C"/>
+    <stop offset="0.52" stop-color="#0A343B"/>
+    <stop offset="1" stop-color="#07252C"/>
+  </linearGradient>
+  <linearGradient id="mes" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#0E7F7E"/>
+    <stop offset="1" stop-color="#0A4D63"/>
+  </linearGradient>
+  <linearGradient id="platform" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#0C4A52"/>
+    <stop offset="0.5" stop-color="#12666B"/>
+    <stop offset="1" stop-color="#0C4A52"/>
+  </linearGradient>
+  <pattern id="grid" width="42" height="42" patternUnits="userSpaceOnUse">
+    <path d="M42 0H0V42" fill="none" stroke="#5AD0C4" stroke-opacity="0.06"/>
+    <circle cx="0" cy="0" r="1.2" fill="#7DE9D9" fill-opacity="0.13"/>
+  </pattern>
+  <pattern id="circuit" width="72" height="72" patternUnits="userSpaceOnUse">
+    <path d="M0 18 H24 L34 28 H58 M12 56 H38 L48 46 H72 M34 0 V14 M58 28 V42"
+          fill="none" stroke="#66E7D3" stroke-opacity="0.16" stroke-width="1.3"/>
+    <circle cx="24" cy="18" r="2" fill="#6BECD6" fill-opacity="0.22"/>
+    <circle cx="48" cy="46" r="2" fill="#6BECD6" fill-opacity="0.22"/>
+  </pattern>
+  <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="6" result="b"/>
+    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <path d="M0 0.8 L10 5 L0 9.2 Z" fill="#32DFC5"/>
+  </marker>
+  <style><![CDATA[text { font-family: "WenQuanYi Micro Hei", "Droid Sans Fallback", sans-serif; }]]></style>
+</defs>
+<rect width="1800" height="1080" fill="url(#bg)"/>
+<rect width="1800" height="1080" fill="url(#grid)"/>
+<g fill="none" stroke="#3ADBC8" stroke-opacity="0.07">
+  <ellipse cx="900" cy="465" rx="800" ry="290"/>
+  <ellipse cx="900" cy="465" rx="690" ry="230"/>
+  <ellipse cx="900" cy="465" rx="570" ry="175"/>
+  <path d="M0 240 C430 80 1370 80 1800 240"/>
+  <path d="M0 760 C430 920 1370 920 1800 760"/>
+</g>
+
+<text x="60" y="52" text-anchor="start" fill="#F4FFFF" font-size="34" font-weight="700" letter-spacing="1.2">深圳智能物流项目系统接口集成架构</text>
+<text x="60" y="82" text-anchor="start" fill="#78EADB" font-size="15" font-weight="500" letter-spacing="0.7">Enterprise System Interface Architecture Blueprint  ·  v1.2</text>
+<line x1="60" y1="99" x2="1740" y2="99" stroke="#31D9C1" stroke-opacity="0.35"/>
+
+    <g>
+      <rect x="70" y="125" width="250" height="84" rx="7" fill="#176173" fill-opacity="0.86"
+            stroke="#32DFC5" stroke-opacity="0.72" stroke-width="2"/>
+      <path d="M70 149 V125 H94" fill="none" stroke="#B5FFF3" stroke-width="3"/>
+      <text x="195.0" y="174.0" text-anchor="middle" fill="#F4FFFF" font-size="23" font-weight="700" letter-spacing="0.5">EAM</text>
+      
+    </g>
+
+    <g>
+      <rect x="390" y="125" width="250" height="84" rx="7" fill="#176173" fill-opacity="0.86"
+            stroke="#32DFC5" stroke-opacity="0.72" stroke-width="2"/>
+      <path d="M390 149 V125 H414" fill="none" stroke="#B5FFF3" stroke-width="3"/>
+      <text x="515.0" y="174.0" text-anchor="middle" fill="#F4FFFF" font-size="23" font-weight="700" letter-spacing="0.5">APS</text>
+      
+    </g>
+
+    <g>
+      <rect x="775" y="125" width="250" height="84" rx="7" fill="#176173" fill-opacity="0.86"
+            stroke="#32DFC5" stroke-opacity="0.72" stroke-width="2"/>
+      <path d="M775 149 V125 H799" fill="none" stroke="#B5FFF3" stroke-width="3"/>
+      <text x="900.0" y="174.0" text-anchor="middle" fill="#F4FFFF" font-size="23" font-weight="700" letter-spacing="0.5">SAP</text>
+      
+    </g>
+
+    <g>
+      <rect x="1480" y="125" width="250" height="84" rx="7" fill="#176173" fill-opacity="0.86"
+            stroke="#32DFC5" stroke-opacity="0.72" stroke-width="2"/>
+      <path d="M1480 149 V125 H1504" fill="none" stroke="#B5FFF3" stroke-width="3"/>
+      <text x="1605.0" y="174.0" text-anchor="middle" fill="#F4FFFF" font-size="23" font-weight="700" letter-spacing="0.5">QMS</text>
+      
+    </g>
+
+    <g>
+      <rect x="70" y="400" width="280" height="110" rx="7" fill="#238C7D" fill-opacity="0.86"
+            stroke="#32DFC5" stroke-opacity="0.72" stroke-width="2"/>
+      <path d="M70 424 V400 H94" fill="none" stroke="#B5FFF3" stroke-width="3"/>
+      <text x="210.0" y="456.0" text-anchor="middle" fill="#F4FFFF" font-size="23" font-weight="700" letter-spacing="0.5">EMS</text>
+      <text x="210.0" y="481.0" text-anchor="middle" fill="#78EADB" font-size="13" font-weight="600" letter-spacing="0">能源管理系统</text>
+    </g>
+
+    <g>
+      <rect x="1470" y="400" width="260" height="110" rx="7" fill="#238C7D" fill-opacity="0.86"
+            stroke="#32DFC5" stroke-opacity="0.72" stroke-width="2"/>
+      <path d="M1470 424 V400 H1494" fill="none" stroke="#B5FFF3" stroke-width="3"/>
+      <text x="1600.0" y="456.0" text-anchor="middle" fill="#F4FFFF" font-size="23" font-weight="700" letter-spacing="0.5">WMS</text>
+      <text x="1600.0" y="481.0" text-anchor="middle" fill="#78EADB" font-size="13" font-weight="600" letter-spacing="0">仓储管理系统</text>
+    </g>
+
+    <g filter="url(#glow)">
+      <rect x="650" y="270" width="500" height="245" rx="10" fill="url(#mes)"
+            stroke="#78EADB" stroke-width="3"/>
+      <rect x="650" y="270" width="500" height="245" rx="10" fill="url(#circuit)"/>
+      <path d="M805 270 H995 L974 290 H826 Z" fill="#F3D374" fill-opacity="0.88"/>
+      <text x="900" y="362" text-anchor="middle" fill="#FFF0A8" font-size="54" font-weight="800" letter-spacing="2">MES</text>
+      <text x="900" y="402" text-anchor="middle" fill="#F4FFFF" font-size="19" font-weight="700" letter-spacing="1">制造执行系统</text>
+      <text x="900" y="440" text-anchor="middle" fill="#B9EEE8" font-size="14" font-weight="500" letter-spacing="0">生产协同 · 过程控制 · 质量追溯 · 设备互联</text>
+    </g>
+<path d="M195 209 V245 H650 V316" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.75"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="262.5" y="225" width="145" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="335" y="246" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">故障、状态</text>
+    </g>
+<path d="M515 209 V240 H735 V270" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.8"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="525.0" y="215" width="210" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="630" y="236" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">主生产计划与工单</text>
+    </g>
+<path d="M800 270 V230 H515 V209" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.6"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="597.5" y="247" width="205" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="700" y="268" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">在制品与产能反馈</text>
+    </g>
+<path d="M900 209 L900 270" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="948.0" y="222" width="120" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1008" y="243" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">产品数据</text>
+    </g>
+<path d="M1480 167 H1285 V310 H1150" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.78"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="1268.0" y="275" width="120" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1328" y="296" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">检测任务</text>
+    </g>
+<path d="M1150 340 H1418 V190 H1480" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.62"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="1265.0" y="315" width="120" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1325" y="336" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">检测结果</text>
+    </g>
+<path d="M350 438 H520 V390 H650" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.74"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="455.0" y="405" width="90" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="500" y="426" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">能耗</text>
+    </g>
+<path d="M650 462 H520 V486 H350" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.58"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="386.0" y="463" width="240" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="506" y="484" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">实时设备状态与作业量</text>
+    </g>
+<path d="M1150 380 H1320 V430 H1470" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.8"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="1254.0" y="393" width="120" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1314" y="414" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">配送需求</text>
+    </g>
+<path d="M1470 480 H1300 V435 H1150" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.62"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="1252.5" y="477" width="135" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1320" y="498" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">出入库信息</text>
+    </g>
+
+    <g>
+      <rect x="350" y="620" width="1100" height="126" rx="8" fill="url(#platform)"
+            stroke="#32DFC5" stroke-width="2.5"/>
+      <rect x="760" y="600" width="280" height="40" rx="3" fill="#E9FFFA" stroke="#32DFC5" stroke-width="2"/>
+      <text x="900" y="627" text-anchor="middle" fill="#087368" font-size="20" font-weight="800" letter-spacing="0.6">IOT系统 &amp; API接口平台</text>
+      <path d="M380 659 H1420" stroke="#62E8D4" stroke-opacity="0.35"/>
+    </g>
+<rect x="380" y="674" width="150" height="44" rx="3" fill="#0A2930" stroke="#39CDB9" stroke-opacity="0.66"/>
+<text x="455" y="702" text-anchor="middle" fill="#D9F2F0" font-size="15" font-weight="600" letter-spacing="0">API网关</text>
+<rect x="570" y="674" width="150" height="44" rx="3" fill="#0A2930" stroke="#39CDB9" stroke-opacity="0.66"/>
+<text x="645" y="702" text-anchor="middle" fill="#D9F2F0" font-size="15" font-weight="600" letter-spacing="0">消息队列</text>
+<rect x="760" y="674" width="150" height="44" rx="3" fill="#0A2930" stroke="#39CDB9" stroke-opacity="0.66"/>
+<text x="835" y="702" text-anchor="middle" fill="#D9F2F0" font-size="15" font-weight="600" letter-spacing="0">设备接入</text>
+<rect x="950" y="674" width="150" height="44" rx="3" fill="#0A2930" stroke="#39CDB9" stroke-opacity="0.66"/>
+<text x="1025" y="702" text-anchor="middle" fill="#D9F2F0" font-size="15" font-weight="600" letter-spacing="0">数据映射</text>
+<rect x="1140" y="674" width="150" height="44" rx="3" fill="#0A2930" stroke="#39CDB9" stroke-opacity="0.66"/>
+<text x="1215" y="702" text-anchor="middle" fill="#D9F2F0" font-size="15" font-weight="600" letter-spacing="0">身份鉴权</text>
+<rect x="1330" y="674" width="150" height="44" rx="3" fill="#0A2930" stroke="#39CDB9" stroke-opacity="0.66"/>
+<text x="1405" y="702" text-anchor="middle" fill="#D9F2F0" font-size="15" font-weight="600" letter-spacing="0">监控审计</text>
+<path d="M760 515 L760 620" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  marker-end="url(#arrow)"/>
+<path d="M835 515 L835 620" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  marker-end="url(#arrow)"/>
+<path d="M965 515 L965 620" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  marker-end="url(#arrow)"/>
+<path d="M1040 515 L1040 620" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  marker-end="url(#arrow)"/>
+<text x="748" y="552" text-anchor="end" fill="#D9F2F0" font-size="13" font-weight="400" letter-spacing="0">配方</text>
+<text x="748" y="570" text-anchor="end" fill="#D9F2F0" font-size="13" font-weight="400" letter-spacing="0">采集点</text>
+<text x="848" y="552" text-anchor="start" fill="#D9F2F0" font-size="13" font-weight="400" letter-spacing="0">设备状态</text>
+<text x="848" y="570" text-anchor="start" fill="#D9F2F0" font-size="13" font-weight="400" letter-spacing="0">生产参数</text>
+<text x="952" y="552" text-anchor="end" fill="#D9F2F0" font-size="13" font-weight="400" letter-spacing="0">缺陷</text>
+<text x="952" y="570" text-anchor="end" fill="#D9F2F0" font-size="13" font-weight="400" letter-spacing="0">数量</text>
+<text x="1053" y="552" text-anchor="start" fill="#D9F2F0" font-size="13" font-weight="400" letter-spacing="0">上差信息</text>
+<text x="1053" y="570" text-anchor="start" fill="#D9F2F0" font-size="13" font-weight="400" letter-spacing="0">叫料信息</text>
+<path d="M210 510 V566 H570 V620" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.7"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="238.0" y="534" width="140" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="308" y="555" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">RESTful API</text>
+    </g>
+<g opacity="0.36"><text x="214" y="585" text-anchor="middle" fill="#A8C1C3" font-size="12" font-weight="500" letter-spacing="0">OPC-UA（兼容协议）</text><path d="M214 592 H465" stroke="#9CB8BA" stroke-width="1" stroke-dasharray="4 6"/></g>
+<path d="M1470 510 H1400 V620" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.75"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="1370.5" y="556" width="215" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1478" y="577" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">JSON / XML / REST API</text>
+    </g>
+
+    <g>
+      <rect x="1470" y="790" width="260" height="94" rx="7" fill="#493F91" fill-opacity="0.86"
+            stroke="#32DFC5" stroke-opacity="0.72" stroke-width="2"/>
+      <path d="M1470 814 V790 H1494" fill="none" stroke="#B5FFF3" stroke-width="3"/>
+      <text x="1600.0" y="838.0" text-anchor="middle" fill="#F4FFFF" font-size="23" font-weight="700" letter-spacing="0.5">东杰 RCS</text>
+      <text x="1600.0" y="863.0" text-anchor="middle" fill="#78EADB" font-size="13" font-weight="600" letter-spacing="0">机器人调度</text>
+    </g>
+
+    <g>
+      <rect x="1470" y="925" width="260" height="94" rx="7" fill="#493F91" fill-opacity="0.86"
+            stroke="#32DFC5" stroke-opacity="0.72" stroke-width="2"/>
+      <path d="M1470 949 V925 H1494" fill="none" stroke="#B5FFF3" stroke-width="3"/>
+      <text x="1600.0" y="973.0" text-anchor="middle" fill="#F4FFFF" font-size="23" font-weight="700" letter-spacing="0.5">澜华 RCS</text>
+      <text x="1600.0" y="998.0" text-anchor="middle" fill="#78EADB" font-size="13" font-weight="600" letter-spacing="0">机器人控制</text>
+    </g>
+<path d="M1530 510 L1530 790" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="1529.0" y="638" width="110" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1584" y="659" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">配送任务</text>
+    </g>
+<path d="M1650 790 L1650 510" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="1635.0" y="638" width="110" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1690" y="659" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">执行情况</text>
+    </g>
+<path d="M1600 884 L1600 925" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.96">
+      <rect x="1463.0" y="899" width="110" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="1518" y="920" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">任务协同</text>
+    </g>
+
+    <g>
+      <rect x="45" y="885" width="190" height="72" rx="5" fill="#263760" fill-opacity="0.92"
+            stroke="#8D83D9" stroke-width="1.6"/>
+      <path d="M45 903 V885 H63" fill="none" stroke="#B5AFFF" stroke-width="2.5"/>
+      <text x="140.0" y="917" text-anchor="middle" fill="#F4FFFF" font-size="16" font-weight="700" letter-spacing="0">松川柔巾产线</text>
+      <text x="140.0" y="939" text-anchor="middle" fill="#BFC8F7" font-size="12" font-weight="400" letter-spacing="0">数据与状态</text>
+    </g>
+
+    <g>
+      <rect x="260" y="885" width="190" height="72" rx="5" fill="#263760" fill-opacity="0.92"
+            stroke="#8D83D9" stroke-width="1.6"/>
+      <path d="M260 903 V885 H278" fill="none" stroke="#B5AFFF" stroke-width="2.5"/>
+      <text x="355.0" y="917" text-anchor="middle" fill="#F4FFFF" font-size="16" font-weight="700" letter-spacing="0">艾诺内包材</text>
+      <text x="355.0" y="939" text-anchor="middle" fill="#BFC8F7" font-size="12" font-weight="400" letter-spacing="0">请求 / 到位信号</text>
+    </g>
+
+    <g>
+      <rect x="475" y="885" width="190" height="72" rx="5" fill="#263760" fill-opacity="0.92"
+            stroke="#8D83D9" stroke-width="1.6"/>
+      <path d="M475 903 V885 H493" fill="none" stroke="#B5AFFF" stroke-width="2.5"/>
+      <text x="570.0" y="917" text-anchor="middle" fill="#F4FFFF" font-size="16" font-weight="700" letter-spacing="0">其他产线设备</text>
+      <text x="570.0" y="939" text-anchor="middle" fill="#BFC8F7" font-size="12" font-weight="400" letter-spacing="0">数据与状态</text>
+    </g>
+
+    <g>
+      <rect x="690" y="885" width="190" height="72" rx="5" fill="#263760" fill-opacity="0.92"
+            stroke="#8D83D9" stroke-width="1.6"/>
+      <path d="M690 903 V885 H708" fill="none" stroke="#B5AFFF" stroke-width="2.5"/>
+      <text x="785.0" y="917" text-anchor="middle" fill="#F4FFFF" font-size="16" font-weight="700" letter-spacing="0">易瑞德一物一码</text>
+      <text x="785.0" y="939" text-anchor="middle" fill="#BFC8F7" font-size="12" font-weight="400" letter-spacing="0">下发 / 打印上传</text>
+    </g>
+
+    <g>
+      <rect x="905" y="885" width="190" height="72" rx="5" fill="#263760" fill-opacity="0.92"
+            stroke="#8D83D9" stroke-width="1.6"/>
+      <path d="M905 903 V885 H923" fill="none" stroke="#B5AFFF" stroke-width="2.5"/>
+      <text x="1000.0" y="917" text-anchor="middle" fill="#F4FFFF" font-size="16" font-weight="700" letter-spacing="0">汇萃智能AI质检</text>
+      <text x="1000.0" y="939" text-anchor="middle" fill="#BFC8F7" font-size="12" font-weight="400" letter-spacing="0">汇印数量</text>
+    </g>
+
+    <g>
+      <rect x="1120" y="885" width="190" height="72" rx="5" fill="#263760" fill-opacity="0.92"
+            stroke="#8D83D9" stroke-width="1.6"/>
+      <path d="M1120 903 V885 H1138" fill="none" stroke="#B5AFFF" stroke-width="2.5"/>
+      <text x="1215.0" y="917" text-anchor="middle" fill="#F4FFFF" font-size="16" font-weight="700" letter-spacing="0">仓储外围设备</text>
+      <text x="1215.0" y="939" text-anchor="middle" fill="#BFC8F7" font-size="12" font-weight="400" letter-spacing="0">输送线 / 自动门</text>
+    </g>
+<path d="M140 838 H1215" fill="none" stroke="#32DFC5" stroke-opacity="0.68" stroke-width="2"/>
+<path d="M900 746 L900 838" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.85"  />
+<path d="M140.0 838 L140.0 885" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.62"  marker-end="url(#arrow)"/>
+<path d="M355.0 838 L355.0 885" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.62"  marker-end="url(#arrow)"/>
+<path d="M570.0 838 L570.0 885" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.62"  marker-end="url(#arrow)"/>
+<path d="M785.0 838 L785.0 885" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.62"  marker-end="url(#arrow)"/>
+<path d="M1000.0 838 L1000.0 885" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.62"  marker-end="url(#arrow)"/>
+<path d="M1215.0 838 L1215.0 885" fill="none" stroke="#32DFC5" stroke-width="2.2" stroke-opacity="0.62"  marker-end="url(#arrow)"/>
+
+    <g opacity="0.34">
+      <rect x="420" y="801" width="162" height="28" rx="14" fill="#29434A" stroke="#A5B9BA"/>
+      <text x="501" y="820" text-anchor="middle" fill="#C5D1D2" font-size="12" font-weight="500" letter-spacing="0">OPC-UA · 可选兼容</text>
+    </g>
+
+    <g opacity="0.78">
+      <rect x="634.5" y="801" width="195" height="29" rx="3"
+            fill="#092A31" stroke="#2BAA9B" stroke-opacity="0.6"/>
+      <text x="732" y="822" text-anchor="middle" fill="#D9F2F0" font-size="14" font-weight="500" letter-spacing="0">MQTT / HTTP / SDK</text>
+    </g>
+
+    <g transform="translate(68,990)">
+      <text x="0" y="0" text-anchor="start" fill="#F4FFFF" font-size="14" font-weight="700" letter-spacing="0">图例</text>
+      <rect x="0" y="16" width="20" height="12" rx="2" fill="#176173"/><text x="30" y="27" text-anchor="start" fill="#85B9BA" font-size="12" font-weight="400" letter-spacing="0">企业系统</text>
+      <rect x="130" y="16" width="20" height="12" rx="2" fill="#238C7D"/><text x="160" y="27" text-anchor="start" fill="#85B9BA" font-size="12" font-weight="400" letter-spacing="0">业务系统</text>
+      <rect x="260" y="16" width="20" height="12" rx="2" fill="#493F91"/><text x="290" y="27" text-anchor="start" fill="#85B9BA" font-size="12" font-weight="400" letter-spacing="0">控制系统</text>
+      <line x1="400" y1="22" x2="435" y2="22" stroke="#32DFC5" stroke-width="2"/><text x="445" y="27" text-anchor="start" fill="#85B9BA" font-size="12" font-weight="400" letter-spacing="0">数据流向</text>
+    </g>
+    <text x="1730" y="1030" text-anchor="end" fill="#85B9BA" font-size="12" font-weight="500" letter-spacing="0">IOT &amp; API Integration Blueprint · v1.2</text>
+
+</svg>
