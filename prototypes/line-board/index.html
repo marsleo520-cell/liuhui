@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>介入/骨科自动化生产线 · 产线看板原型</title>
+  <style>
+    :root {
+      --bar-h: 56px;
+      --board: #E5F8F8;
+      --header: #0097AE;
+      --teal: #0C7E90;
+      --primary: #009090;
+      --primary-hover: #209E9E;
+      --primary-light: #E7F6F6;
+      --success: #00AC97;
+      --success-light: #E8FFF8;
+      --warning: #E37318;
+      --warning-light: #FFF6E8;
+      --danger: #D54941;
+      --danger-light: #FFEDE8;
+      --title: #181818;
+      --text: #4B4B4B;
+      --muted: #8B8B8B;
+      --line: #DCDCDC;
+      --card: #ffffff;
+      --run: #12A37A;
+      --run-bg: #D9F6EC;
+      --idle: #C56A10;
+      --idle-bg: #FFF1DC;
+      --down: #5C727C;
+      --down-bg: #E7EEEF;
+      --change: #0E78A8;
+      --change-bg: #DDF3FB;
+      --plan: #0B6E78;
+      --plan-bg: #D4F4F6;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { margin: 0; }
+    body {
+      background: var(--board);
+      color: var(--title);
+      font-family: "PingFang SC", "Microsoft YaHei", "WenQuanYi Micro Hei", system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 22px;
+    }
+    button { font-family: inherit; }
+    :focus { outline: none; }
+    :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    h1, h2, p { margin: 0; }
+
+    .proto-bar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      padding: 12px 16px;
+      background: #F5F6F7;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+    }
+    .proto-kicker { color: var(--muted); font-size: 12px; line-height: 20px; margin-right: 4px; }
+    .proto-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .proto-group > span, #viewportLabel { color: var(--muted); font-size: 12px; line-height: 20px; }
+
+    .btn {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--title);
+      font-size: 14px;
+      line-height: 22px;
+      cursor: pointer;
+    }
+    .btn:hover { background: #F3F3F3; }
+    .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .btn.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+    .btn.text { background: transparent; border-color: transparent; color: var(--primary); padding: 0 8px; }
+    .btn.text:hover { background: var(--primary-light); }
+    .btn[aria-pressed="true"] { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+    .btn:disabled { background: #F3F3F3; border-color: var(--line); color: var(--muted); cursor: not-allowed; }
+    .btn.primary:disabled { background: #B5E0E0; border-color: #B5E0E0; color: #fff; }
+
+    .header {
+      background:
+        radial-gradient(closest-side at 50% 50%, rgba(255,255,255,.38), rgba(255,255,255,0) 70%),
+        linear-gradient(90deg, #0097AE 0%, #00A8BE 50%, #0097AE 100%);
+      color: #fff;
+    }
+    .header-inner {
+      min-height: 72px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 8px; justify-self: start; }
+    .brand-mark {
+      background: #fff;
+      color: #0A6E80;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 22px;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .brand-name { font-size: 14px; line-height: 22px; }
+    .header h1 {
+      font-size: 24px;
+      line-height: 32px;
+      font-weight: 700;
+      text-align: center;
+      text-shadow: 0 1px 0 rgba(0, 50, 60, .25);
+    }
+    .header-tools { display: flex; justify-self: end; align-items: center; gap: 16px; }
+    .nav-row { display: flex; gap: 8px; justify-content: flex-end; }
+    .nav-btn {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,.75);
+      background: transparent;
+      color: #fff;
+      font-size: 14px;
+      line-height: 22px;
+    }
+    .nav-btn:disabled { opacity: .55; cursor: not-allowed; }
+    .nav-note {
+      margin-top: 4px;
+      background: rgba(255,255,255,.94);
+      color: var(--text);
+      font-size: 12px;
+      line-height: 20px;
+      border-radius: 4px;
+      padding: 0 8px;
+      text-align: center;
+    }
+    .clock { text-align: right; }
+    .clock b { display: block; font-size: 20px; line-height: 28px; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .clock span { font-size: 12px; line-height: 20px; }
+
+    .board { padding: 16px 24px 32px; }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .kpi {
+      background: var(--card);
+      border: 1px solid rgba(0, 163, 184, .18);
+      border-radius: 6px;
+      box-shadow: 0 0 6px rgba(0,0,0,.1);
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .ico {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+    .ico.date { background: var(--primary-light); color: var(--primary); }
+    .ico.people { background: var(--success-light); color: var(--success); }
+    .ico.owner { background: var(--warning-light); color: var(--warning); }
+    .kpi .label { color: var(--muted); font-size: 12px; line-height: 20px; }
+    .kpi .value { font-size: 20px; line-height: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .kpi .sub { color: var(--muted); font-size: 12px; line-height: 20px; }
+
+    .fresh {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      color: var(--text);
+    }
+    .fresh b { color: var(--title); font-variant-numeric: tabular-nums; }
+    .fresh-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .reason { color: var(--muted); font-size: 12px; line-height: 20px; }
+
+    .alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-top: 16px;
+    }
+    .alert .grow { flex: 1; }
+    .alert b { display: block; font-size: 14px; line-height: 22px; color: var(--title); }
+    .alert p { color: var(--text); }
+    .alert-ico {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 12px;
+      line-height: 20px;
+      flex: none;
+      margin-top: 1px;
+    }
+    .alert-danger { background: var(--danger-light); }
+    .alert-danger .alert-ico { background: var(--danger); }
+    .alert-success { background: var(--success-light); }
+    .alert-success .alert-ico { background: var(--success); }
+    .alert-warning { background: var(--warning-light); }
+    .alert-warning .alert-ico { background: var(--warning); }
+    .alert-info { background: var(--primary-light); }
+    .alert-info .alert-ico { background: var(--primary); }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid rgba(0, 163, 184, .18);
+      border-radius: 6px;
+      box-shadow: 0 0 6px rgba(0,0,0,.1);
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .sec-h h2 { font-size: 20px; line-height: 28px; display: flex; align-items: center; gap: 8px; }
+    .diamond { width: 8px; height: 8px; background: #00A3B8; transform: rotate(45deg); display: inline-block; flex: none; }
+    .muted { color: var(--muted); font-size: 12px; line-height: 20px; }
+
+    .equip-top { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
+    .toee, .comp {
+      background: #F4FBFC;
+      border: 1px solid rgba(0, 163, 184, .16);
+      border-radius: 6px;
+      padding: 16px;
+    }
+    .toee .label, .comp-h span { color: var(--muted); font-size: 12px; line-height: 20px; }
+    .toee-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .toee-num { font-size: 40px; line-height: 48px; font-weight: 700; color: var(--teal); font-variant-numeric: tabular-nums; }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 2px;
+      font-size: 12px;
+      line-height: 20px;
+      white-space: nowrap;
+    }
+    .tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; background: currentColor; }
+    .tag-success { background: var(--success-light); color: var(--success); }
+    .tag-warning { background: var(--warning-light); color: var(--warning); }
+    .tag-danger { background: var(--danger-light); color: var(--danger); }
+    .tag-default { background: #F3F3F3; color: var(--text); }
+    .comp-h { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .comp-h b { font-size: 20px; line-height: 28px; font-variant-numeric: tabular-nums; }
+    .bar {
+      display: flex;
+      height: 48px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #F3F3F3;
+      margin-top: 12px;
+    }
+    .seg { color: #fff; font-size: 12px; line-height: 48px; text-align: center; overflow: hidden; white-space: nowrap; }
+    .seg-run { background: var(--run); }
+    .seg-idle { background: var(--idle); }
+    .seg-down { background: var(--down); }
+    .seg-change { background: var(--change); }
+    .seg-plan { background: var(--plan); }
+    .story { margin-top: 12px; font-size: 16px; line-height: 24px; color: var(--title); }
+    .caption { margin-top: 4px; }
+    .c-run { color: #0C8A62; }
+    .c-idle { color: var(--idle); }
+    .c-down { color: var(--down); }
+    .c-change { color: var(--change); }
+    .c-plan { color: var(--plan); }
+
+    .hours { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .hour { border-radius: 6px; padding: 16px; min-height: 128px; display: flex; flex-direction: column; gap: 8px; }
+    .hour-run { background: var(--run-bg); }
+    .hour-idle { background: var(--idle-bg); }
+    .hour-down { background: var(--down-bg); }
+    .hour-change { background: var(--change-bg); }
+    .hour-plan { background: var(--plan-bg); }
+    .hour-label { font-size: 14px; line-height: 22px; color: var(--text); }
+    .hour-val { font-size: 28px; line-height: 36px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .hour-run .hour-val { color: #0C8A62; }
+    .hour-idle .hour-val { color: var(--idle); }
+    .hour-down .hour-val { color: #3E525C; }
+    .hour-change .hour-val { color: var(--change); }
+    .hour-plan .hour-val { color: var(--plan); }
+    .hour-val span { font-size: 14px; line-height: 22px; font-weight: 400; margin-left: 4px; color: var(--text); }
+    .meter { height: 8px; border-radius: 999px; background: rgba(255,255,255,.72); overflow: hidden; }
+    .meter i { display: block; height: 100%; border-radius: inherit; }
+    .hour-run .meter i { background: var(--run); }
+    .hour-idle .meter i { background: var(--idle); }
+    .hour-down .meter i { background: var(--down); }
+    .hour-change .meter i { background: var(--change); }
+    .hour-plan .meter i { background: var(--plan); }
+    .hour-share { font-size: 12px; line-height: 20px; color: var(--muted); }
+    .empty-inline { color: var(--text); padding: 24px 0; }
+
+    .table-wrap { overflow-x: auto; }
+    table.grid { width: 100%; border-collapse: collapse; min-width: 980px; }
+    .grid th {
+      background: #F3F3F3;
+      color: var(--text);
+      font-weight: 700;
+      text-align: left;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+    .grid td {
+      padding: 16px 12px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+      background: #fff;
+    }
+    .grid tbody tr { cursor: pointer; }
+    .grid tbody tr:hover td, .grid tr.is-open td { background: var(--primary-light); }
+    .grid tr.row-low td:first-child { box-shadow: inset 3px 0 0 var(--warning); }
+    .grid tr.row-ok td:first-child { box-shadow: inset 3px 0 0 var(--success); }
+    .grid tr.row-mid td:first-child { box-shadow: inset 3px 0 0 var(--primary); }
+    .grid tr.row-over td:first-child { box-shadow: inset 3px 0 0 var(--danger); }
+    .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .remain-low { color: var(--warning); font-weight: 700; }
+    .remain-over { color: var(--danger); font-weight: 700; }
+    .sr {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    .p-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .p-top b { font-size: 16px; line-height: 24px; font-variant-numeric: tabular-nums; }
+    .p-sub { color: var(--muted); font-size: 12px; line-height: 20px; margin-top: 4px; }
+    .track { height: 8px; background: #F3F3F3; border-radius: 999px; overflow: hidden; margin-top: 4px; }
+    .track i { display: block; height: 100%; }
+    .t-low { color: var(--warning); }
+    .t-ok { color: var(--success); }
+    .t-mid { color: var(--primary); }
+    .t-over { color: var(--danger); }
+    .b-low { background: var(--warning); }
+    .b-ok { background: var(--success); }
+    .b-mid { background: var(--primary); }
+    .b-over { background: var(--danger); }
+    .over-note { color: var(--danger); font-size: 12px; line-height: 20px; }
+    .table-foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-top: 12px;
+      font-size: 12px;
+      line-height: 20px;
+    }
+    .count { color: var(--text); }
+    .legend { color: var(--muted); }
+    .link {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--primary);
+      font-size: 14px;
+      line-height: 22px;
+      cursor: pointer;
+    }
+    .link:hover { color: var(--primary-hover); }
+    .empty-box { text-align: center; padding: 32px 16px; color: var(--text); }
+    .empty-box b { display: block; font-size: 16px; line-height: 24px; color: var(--title); margin-bottom: 4px; }
+    .masked { color: var(--muted); padding: 24px 0; }
+
+    .orders-narrow { display: grid; gap: 12px; }
+    .ocard {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 16px;
+      border-left: 4px solid var(--primary);
+    }
+    .ocard.row-low { border-left-color: var(--warning); }
+    .ocard.row-ok { border-left-color: var(--success); }
+    .ocard.row-over { border-left-color: var(--danger); }
+    .ocard-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .oid { font-size: 16px; line-height: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .o-meta { color: var(--text); margin: 8px 0; }
+    .o-nums { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--text); margin-top: 8px; }
+
+    .sk {
+      background: linear-gradient(90deg, #E7F6F6 25%, #ffffff 37%, #E7F6F6 63%);
+      background-size: 400% 100%;
+      animation: sheen 1.2s ease infinite;
+      border-radius: 4px;
+    }
+    @keyframes sheen { from { background-position: 100% 0; } to { background-position: 0 0; } }
+    @media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+    .sk-line { height: 22px; }
+    .sk-block { height: 120px; margin-top: 12px; }
+
+    .mask { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 50; }
+    .dialog {
+      position: fixed;
+      z-index: 55;
+      left: 50%;
+      top: calc(var(--bar-h) + 40px);
+      transform: translateX(-50%);
+      width: min(800px, calc(100vw - 32px));
+      max-height: calc(100vh - var(--bar-h) - 80px);
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 0 12px rgba(0,0,0,.2);
+      display: flex;
+      flex-direction: column;
+    }
+    .dialog[data-kind="metric"] { width: min(512px, calc(100vw - 32px)); }
+    .dialog[data-kind="range"] { width: min(416px, calc(100vw - 32px)); }
+    .dlg-h, .dlg-f { padding: 16px 24px; display: flex; align-items: center; flex: none; }
+    .dlg-h { justify-content: space-between; border-bottom: 1px solid var(--line); }
+    .dlg-f { justify-content: flex-end; border-top: 1px solid var(--line); }
+    .dlg-h h2 { font-size: 16px; line-height: 24px; }
+    .dlg-b { padding: 24px 32px; overflow: auto; }
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 20px;
+      line-height: 32px;
+    }
+    .icon-btn:hover { background: #F3F3F3; }
+    .remain-hero { background: #F4FBFC; border-radius: 6px; padding: 16px; margin-bottom: 16px; }
+    .remain-hero span { display: block; color: var(--muted); font-size: 12px; line-height: 20px; }
+    .remain-hero b { font-size: 36px; line-height: 44px; font-variant-numeric: tabular-nums; }
+    .defs { display: grid; gap: 12px; margin: 0 0 16px; }
+    .defs div { display: grid; grid-template-columns: 160px 1fr; gap: 12px; }
+    .defs dt { color: var(--muted); }
+    .defs dd { margin: 0; font-weight: 700; }
+    .note { color: var(--text); }
+    .note + .note { margin-top: 8px; }
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; margin-top: 16px; }
+    .split span { display: block; color: var(--muted); font-size: 12px; line-height: 20px; }
+
+    .toast {
+      position: relative;
+      z-index: 45;
+      margin: 8px auto 0;
+      width: max-content;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 0 12px rgba(0,0,0,.2);
+      padding: 12px 12px 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 240px;
+      max-width: min(520px, calc(100vw - 32px));
+    }
+    .proto-sample { margin-left: auto; color: var(--muted); font-size: 12px; line-height: 20px; }
+    .toast i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      flex: none;
+    }
+    .sample-flag {
+      margin: 16px 0 0;
+      text-align: right;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 20px;
+    }
+    body.modal-open { overflow: hidden; }
+
+    @media (max-width: 960px) {
+      .header-inner { grid-template-columns: 1fr; justify-items: center; padding: 12px 16px; }
+      .brand, .header-tools { justify-self: center; }
+      .header-tools { width: 100%; flex-wrap: wrap; justify-content: center; gap: 8px; }
+      .nav-block, .clock { width: 100%; }
+      .nav-row { justify-content: center; }
+      .clock { text-align: center; }
+      .clock span { white-space: nowrap; }
+      .header h1 { font-size: 20px; line-height: 28px; }
+      .brand-name { display: none; }
+      .board { padding: 12px 12px 48px; }
+      .kpis, .equip-top, .split, .defs div { grid-template-columns: 1fr; }
+      .hours { grid-template-columns: 1fr 1fr; }
+      .hour:last-child:nth-child(odd) { grid-column: 1 / -1; }
+      .clock { text-align: right; }
+      .dlg-b { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="proto-bar" id="protoBar">
+    <span class="proto-kicker">走查控制 · 不属于产线画面</span>
+    <div class="proto-group">
+      <span>场景</span>
+      <button type="button" class="btn" data-action="scenario" data-scenario="main" aria-pressed="true">主路径</button>
+      <button type="button" class="btn" data-action="scenario" data-scenario="lag">数据滞后</button>
+    </div>
+    <div class="proto-group">
+      <span>状态</span>
+      <button type="button" class="btn" data-action="mode" data-mode="empty">空</button>
+      <button type="button" class="btn" data-action="mode" data-mode="loading">加载</button>
+      <button type="button" class="btn" data-action="mode" data-mode="success" aria-pressed="true">成功</button>
+      <button type="button" class="btn" data-action="mode" data-mode="fail">失败</button>
+      <button type="button" class="btn" data-action="mode" data-mode="noperm">无权限</button>
+      <button type="button" class="btn" data-action="mode" data-mode="boundary">边界</button>
+    </div>
+    <button type="button" class="btn" data-action="reset">重置</button>
+    <span id="viewportLabel">当前视口：桌面</span>
+    <span class="proto-sample">样本数据，仅供走查</span>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden>
+    <i></i>
+    <span id="toastText"></span>
+    <button type="button" class="icon-btn" data-action="toast-close" aria-label="关闭提示">×</button>
+  </div>
+  <div id="view"></div>
+  <script>
+    const LINE = "介入/骨科自动化生产线";
+    const MAIN_ORDERS = [
+      { id: "1000929211", material: "504-008083", status: "进行中", plan: 6600, done: 1500, remain: 5100, unit: "PCS" },
+      { id: "1000946774", material: "504-006064", status: "已开工", plan: 542, done: 468, remain: 74, unit: "PCS" }
+    ];
+    const MAIN_TIMES = [
+      { key: "run", name: "运行", label: "运行/今日", cents: 59 },
+      { key: "idle", name: "待机", label: "待机/今日", cents: 1 },
+      { key: "down", name: "停机", label: "停机/今日", cents: 17 },
+      { key: "change", name: "换线", label: "换线/今日", cents: 150 },
+      { key: "plan", name: "计划停机", label: "计划停机/今日", cents: 200 }
+    ];
+    const BOUND_ORDERS = [
+      { id: "SAMPLE-B-001", material: "SAMPLE-MAT-001", status: "进行中", plan: 6600, done: 0, remain: 6600, unit: "PCS" },
+      { id: "SAMPLE-B-002", material: "SAMPLE-MAT-002", status: "已开工", plan: 542, done: 542, remain: 0, unit: "PCS" },
+      { id: "SAMPLE-B-003", material: "SAMPLE-MAT-003", status: "进行中", plan: 6600, done: 7100, remain: 0, unit: "PCS" }
+    ];
+    const BOUND_TIMES = [
+      { key: "run", name: "运行", label: "运行/今日", cents: 5 },
+      { key: "idle", name: "待机", label: "待机/今日", cents: 0 },
+      { key: "down", name: "停机", label: "停机/今日", cents: 650 },
+      { key: "change", name: "换线", label: "换线/今日", cents: 20 },
+      { key: "plan", name: "计划停机", label: "计划停机/今日", cents: 10 }
+    ];
+
+    const state = {
+      scenario: "main",
+      mode: "success",
+      dataTime: "10:35:30",
+      recovered: false,
+      dialog: null,
+      orderId: null,
+      focusBack: null
+    };
+    let loadToken = 0;
+    let toastTimer = null;
+
+    function esc(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+    function fmtInt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+    function fmtCents(c) {
+      if (c == null) return "—";
+      const whole = Math.floor(Math.abs(c) / 100);
+      const frac = Math.abs(c) % 100;
+      const sign = c < 0 ? "-" : "";
+      if (frac === 0) return sign + String(whole);
+      if (frac % 10 === 0) return sign + whole + "." + String(frac / 10);
+      return sign + whole + "." + String(frac).padStart(2, "0");
+    }
+    function pctOf(part, total) {
+      if (!total) return "—";
+      return (Math.round((part / total) * 1000) / 10).toFixed(1) + "%";
+    }
+    function addMinutes(hms, mins) {
+      const [h, m, s] = hms.split(":").map(Number);
+      const t = h * 3600 + m * 60 + s + mins * 60;
+      const hh = Math.floor(t / 3600) % 24;
+      const mm = Math.floor(t / 60) % 60;
+      const ss = t % 60;
+      return [hh, mm, ss].map((n) => String(n).padStart(2, "0")).join(":");
+    }
+    function progressInfo(order) {
+      const raw = order.plan ? (order.done / order.plan) * 100 : 0;
+      const shown = (Math.round(raw * 10) / 10).toFixed(1);
+      const width = Math.max(0, Math.min(100, raw));
+      let cls = "mid";
+      if (order.done > order.plan) cls = "over";
+      else if (Number(shown) < 50) cls = "low";
+      else if (Number(shown) >= 80) cls = "ok";
+      return { shown, width, cls, overQty: order.done > order.plan ? order.done - order.plan : 0 };
+    }
+    function tag(status) {
+      const kind = status === "进行中" ? "success" : status === "已开工" ? "warning" : "default";
+      return `<span class="tag tag-${kind}" title="状态含义待确认">${esc(status)}</span>`;
+    }
+    function pack() {
+      if (state.mode === "boundary") {
+        return { orders: BOUND_ORDERS, times: BOUND_TIMES, toee: "99.0", staff: "25", owner: "杜旭", kind: "data" };
+      }
+      if (state.mode === "empty") {
+        return {
+          orders: [],
+          times: MAIN_TIMES.map((t) => ({ ...t, cents: null })),
+          toee: null,
+          staff: "0",
+          owner: "杜旭",
+          kind: "empty"
+        };
+      }
+      if (state.mode === "fail") return { kind: "fail", staff: "—", owner: "—" };
+      if (state.mode === "noperm") return { kind: "noperm", staff: "无权限", owner: "无权限" };
+      if (state.mode === "loading") return { kind: "loading", staff: null, owner: null };
+      return { orders: MAIN_ORDERS, times: MAIN_TIMES, toee: "99.0", staff: "25", owner: "杜旭", kind: "data" };
+    }
+    function svg(body) {
+      return `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+    }
+    function storyHtml(times) {
+      const total = times.reduce((s, t) => s + (t.cents || 0), 0);
+      if (!total) return `<p class="empty-inline">今日暂无报工工时</p>`;
+      const sorted = [...times].sort((a, b) => (b.cents || 0) - (a.cents || 0));
+      const run = times.find((t) => t.key === "run");
+      return `<p class="story">五段合计 <b>${fmtCents(total)} h</b>。最长是 <b class="c-${sorted[0].key}">${esc(sorted[0].name)} ${fmtCents(sorted[0].cents)} h</b>，其次 <b class="c-${sorted[1].key}">${esc(sorted[1].name)} ${fmtCents(sorted[1].cents)} h</b>。运行 <b class="c-run">${fmtCents(run.cents)} h</b>，占已归集 ${pctOf(run.cents, total)}。</p>
+        <p class="caption muted">条形按五段工时内部占比绘制，不是占整班。</p>`;
+    }
+    function barHtml(times) {
+      const total = times.reduce((s, t) => s + (t.cents || 0), 0);
+      if (!total) return "";
+      const label = times.map((t) => `${t.name} ${fmtCents(t.cents)} 小时`).join("，");
+      const segs = times.map((t) => {
+        const share = t.cents / total;
+        const text = share >= 0.12 ? esc(t.name) : "";
+        return `<div class="seg seg-${t.key}" style="width:${(share * 100).toFixed(2)}%">${text}</div>`;
+      }).join("");
+      return `<div class="bar" role="img" aria-label="${esc(label)}">${segs}</div>`;
+    }
+    function hoursHtml(times) {
+      const max = Math.max(...times.map((t) => t.cents || 0), 0);
+      const total = times.reduce((s, t) => s + (t.cents || 0), 0);
+      return `<div class="hours">${times.map((t) => {
+        const cents = t.cents;
+        let width = 0;
+        if (max && cents) width = Math.round((cents / max) * 100);
+        if (cents > 0 && width < 2) width = 2;
+        const share = cents == null || !total ? "—" : pctOf(cents, total);
+        const value = cents == null ? "—" : `${fmtCents(cents)}<span>h</span>`;
+        return `<article class="hour hour-${t.key}">
+          <div class="hour-label">${esc(t.label)}</div>
+          <div class="hour-val">${value}</div>
+          <div class="meter" aria-hidden="true"><i style="width:${width}%"></i></div>
+          <div class="hour-share">占已归集 ${share}</div>
+        </article>`;
+      }).join("")}</div>`;
+    }
+    function progressCell(order) {
+      const p = progressInfo(order);
+      const extra = p.overQty ? `<span class="over-note">超过计划 ${fmtInt(p.overQty)}</span>` : "";
+      return `<div class="p-top"><b class="t-${p.cls}">${p.shown}%</b>${extra}</div>
+        <div class="track" aria-hidden="true"><i class="b-${p.cls}" style="width:${p.width}%"></i></div>
+        <div class="p-sub">${fmtInt(order.done)} / ${fmtInt(order.plan)}</div>`;
+    }
+    function remainClass(order) {
+      const p = progressInfo(order);
+      if (p.cls === "low") return "remain-low";
+      if (p.cls === "over") return "remain-over";
+      return "";
+    }
+    function ordersTable(orders) {
+      const rows = orders.map((order) => {
+        const p = progressInfo(order);
+        const open = state.dialog === "order" && state.orderId === order.id ? " is-open" : "";
+        return `<tr class="row-${p.cls}${open}" data-order="${esc(order.id)}" data-action="detail" tabindex="0">
+          <td>${tag(order.status)}</td>
+          <td>${esc(order.id)}</td>
+          <td>${esc(order.material)}</td>
+          <td class="num">${fmtInt(order.plan)}</td>
+          <td>${esc(order.unit)}</td>
+          <td class="num">${fmtInt(order.done)}</td>
+          <td class="num ${remainClass(order)}">${fmtInt(order.remain)}</td>
+          <td>${progressCell(order)}</td>
+          <td><button type="button" class="link" data-action="detail">详情</button></td>
+        </tr>`;
+      }).join("");
+      return `<div class="orders-wide table-wrap">
+        <table class="grid">
+          <caption class="sr">${esc(LINE)}在制订单</caption>
+          <thead>${headRow}</thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    }
+    function ordersCards(orders) {
+      const cards = orders.map((order) => {
+        const p = progressInfo(order);
+        return `<article class="ocard row-${p.cls}" data-order="${esc(order.id)}" data-action="detail" tabindex="0">
+          <div class="ocard-top">${tag(order.status)}<button type="button" class="link" data-action="detail">详情</button></div>
+          <div class="oid">${esc(order.id)}</div>
+          <div class="o-meta">物料号 ${esc(order.material)} · ${esc(order.unit)}</div>
+          ${progressCell(order)}
+          <div class="o-nums"><span>计划 ${fmtInt(order.plan)}</span><span>完成 ${fmtInt(order.done)}</span><span>剩余 ${fmtInt(order.remain)}</span></div>
+        </article>`;
+      }).join("");
+      return `<div class="orders-narrow" hidden>${cards}</div>`;
+    }
+    const headRow = `<tr>
+            <th>状态</th><th>订单号</th><th>物料号</th><th class="num">订单计划</th><th>单位</th>
+            <th class="num">订单完成</th><th class="num">订单剩余</th><th>订单进度</th><th>操作</th>
+          </tr>`;
+    function ordersBlock(orders) {
+      if (!orders.length) {
+        return `<div class="orders-wide table-wrap"><table class="grid">
+            <thead>${headRow}</thead>
+            <tbody><tr><td colspan="9"><div class="empty-box"><b>当前产线暂无在制订单</b></div></td></tr></tbody>
+          </table></div>
+          <div class="orders-narrow" hidden>
+            <div class="muted">状态 · 订单号 · 物料号 · 订单计划 · 单位 · 订单完成 · 订单剩余 · 订单进度</div>
+            <div class="empty-box"><b>当前产线暂无在制订单</b></div>
+          </div>`;
+      }
+      return ordersTable(orders) + ordersCards(orders) + `<div class="table-foot">
+        <span class="count">共 ${orders.length} 项数据</span>
+        <span class="legend">订单进度 = 订单完成 / 订单计划，本屏计算。低于 50% 警告色，80% 及以上成功色，超过计划危险色。阈值待确认。</span>
+      </div>`;
+    }
+    function alertBox(kind, title, text, action) {
+      const actionHtml = action || "";
+      return `<div class="alert alert-${kind}" role="${kind === "danger" ? "alert" : "status"}">
+        <span class="alert-ico" aria-hidden="true">${kind === "danger" ? "!" : kind === "success" ? "✓" : kind === "warning" ? "!" : "i"}</span>
+        <div class="grow"><b>${title}</b><p>${text}</p></div>
+        ${actionHtml}
+      </div>`;
+    }
+    function equipmentBlock(data) {
+      const toeeText = data.toee ? `${data.toee}%` : "—";
+      const toeeTag = data.toee ? `<span class="tag tag-warning">口径待确认</span>` : `<span class="tag tag-default">无工时</span>`;
+      return `<section class="panel" data-block="equipment">
+        <div class="sec-h"><h2><i class="diamond"></i>设备信息</h2><span class="muted">今日工时</span></div>
+        <div class="equip-top">
+          <div class="toee">
+            <div class="label">TOEE（时间稼动率）/ 今日</div>
+            <div class="toee-row"><div class="toee-num" id="toeeValue">${toeeText}</div>${toeeTag}</div>
+            <button type="button" class="btn text" data-action="metric">查看口径</button>
+          </div>
+          <div class="comp">
+            <div class="comp-h"><span>已归集工时分布</span><b>${data.kind === "empty" ? "—" : fmtCents(data.times.reduce((s, t) => s + (t.cents || 0), 0)) + " h"}</b></div>
+            ${barHtml(data.times)}
+            ${storyHtml(data.times)}
+          </div>
+        </div>
+        ${hoursHtml(data.times)}
+      </section>`;
+    }
+    function lineBlock(data) {
+      const count = data.orders.length;
+      return `<section class="panel" data-block="line">
+        <div class="sec-h"><h2><i class="diamond"></i>产线信息</h2><span class="muted">在制订单</span></div>
+        ${ordersBlock(data.orders)}
+        ${count ? "" : `<div class="table-foot"><span class="count">共 0 项数据</span></div>`}
+      </section>`;
+    }
+    function loadingBlock() {
+      return `<section class="panel" data-block="equipment">
+          <div class="sec-h"><h2><i class="diamond"></i>设备信息</h2></div>
+          <div class="sk sk-line" style="width:180px"></div>
+          <div class="sk sk-block"></div>
+        </section>
+        <section class="panel" data-block="line">
+          <div class="sec-h"><h2><i class="diamond"></i>产线信息</h2></div>
+          <div class="table-wrap"><table class="grid"><thead>${headRow}</thead><tbody>
+            <tr><td colspan="9"><div class="sk sk-line"></div></td></tr>
+            <tr><td colspan="9"><div class="sk sk-line"></div></td></tr>
+          </tbody></table></div>
+        </section>`;
+    }
+    function maskedBlocks() {
+      return `<section class="panel" data-block="equipment"><div class="sec-h"><h2><i class="diamond"></i>设备信息</h2></div><p class="masked">无权限</p></section>
+        <section class="panel" data-block="line"><div class="sec-h"><h2><i class="diamond"></i>产线信息</h2></div><p class="masked">无权限，订单号不展示</p></section>`;
+    }
+    function kpiValue(text) {
+      if (text == null) return `<div class="sk sk-line" style="width:88px"></div>`;
+      return `<div class="value">${esc(text)}</div>`;
+    }
+    function dialogHtml(data) {
+      if (!state.dialog) return "";
+      if (state.dialog === "range") {
+        return mask(`统计范围`, "range", `
+          <p class="note">样本日固定为 2026-11-19。</p>
+          <p class="note">切换其他日期尚未接入，避免画成已经可以按日回看。本按钮不修改订单。</p>`);
+      }
+      if (state.dialog === "metric") {
+        const times = data.times || [];
+        const total = times.reduce((s, t) => s + (t.cents || 0), 0);
+        const run = times.find((t) => t.key === "run");
+        const rows = times.length
+          ? times.map((t) => `<div><dt>${esc(t.name)}</dt><dd>${t.cents == null ? "—" : fmtCents(t.cents) + " h"}</dd></div>`).join("")
+          : `<div><dt>五段工时</dt><dd>—</dd></div>`;
+        const compare = total && run
+          ? `<p class="note">运行占已归集 ${pctOf(run.cents, total)}。这是五段相加后的算术，不是另一套 TOEE。界面上的 ${esc(data.toee)}% 与此对不上，本屏不自动改正。</p>
+             <p class="note">正式分母是否含计划停机、换线、未开机时间，待确认。口径版本：待确认。</p>`
+          : `<p class="note">当前没有报工工时，不能对照稼动率。口径版本：待确认。</p>`;
+        return mask(`TOEE 口径`, "metric", `
+          <dl class="defs">
+            <div><dt>界面上的 TOEE</dt><dd>${data.toee ? data.toee + "%" : "—"}</dd></div>
+            <div><dt>五段工时合计</dt><dd>${total ? fmtCents(total) + " h" : "—"}</dd></div>
+            ${rows}
+          </dl>
+          ${compare}`);
+      }
+      const order = (data.orders || []).find((item) => item.id === state.orderId);
+      if (!order) return mask("订单", "order", `<p class="note">未找到该订单（样本）。</p>`);
+      const p = progressInfo(order);
+      const heroCls = p.cls === "low" ? "t-low" : p.cls === "over" ? "t-over" : p.cls === "ok" ? "t-ok" : "t-mid";
+      const zeroNote = order.remain === 0 ? `<p class="note">剩余为 0，状态仍是「${esc(order.status)}」。是否离开在制列表，待确认。</p>` : "";
+      const overNote = p.overQty ? `<p class="note">完成超过计划 ${fmtInt(p.overQty)} ${esc(order.unit)}。</p>` : "";
+      return mask(`订单 ${esc(order.id)}`, "order", `
+        <div class="remain-hero">
+          <span>订单剩余</span>
+          <b class="${heroCls}">${fmtInt(order.remain)}</b>
+          <span>${esc(order.unit)}</span>
+        </div>
+        ${progressCell(order)}
+        <div class="split">
+          <div><span>状态</span><b>${esc(order.status)}</b></div>
+          <div><span>订单号</span><b>${esc(order.id)}</b></div>
+          <div><span>物料号</span><b>${esc(order.material)}</b></div>
+          <div><span>单位</span><b>${esc(order.unit)}</b></div>
+          <div><span>订单计划</span><b>${fmtInt(order.plan)}</b></div>
+          <div><span>订单完成</span><b>${fmtInt(order.done)}</b></div>
+          <div><span>数据时间</span><b>${esc(state.dataTime)}</b></div>
+          <div><span>产线</span><b>${esc(LINE)}</b></div>
+        </div>
+        <p class="note" style="margin-top:16px">进行中与已开工的差别待确认。</p>
+        ${zeroNote}
+        ${overNote}
+        <p class="note">本屏只读。完工、改数量、改派不在看板上办理。</p>`);
+    }
+    function mask(title, kind, body) {
+      return `<div class="mask" data-testid="mask">
+        <div class="dialog" role="dialog" aria-modal="true" tabindex="-1" data-kind="${kind}" aria-labelledby="dlgTitle">
+          <div class="dlg-h"><h2 id="dlgTitle">${title}</h2><button type="button" class="icon-btn" data-action="close" aria-label="关闭">×</button></div>
+          <div class="dlg-b">${body}</div>
+          <div class="dlg-f"><button type="button" class="btn" data-action="close">关闭</button></div>
+        </div>
+      </div>`;
+    }
+    function render() {
+      const data = pack();
+      const refreshDisabled = state.mode === "loading" || state.mode === "noperm" || state.mode === "fail";
+      const rangeDisabled = state.mode === "loading";
+      let reason = "";
+      if (state.mode === "loading") reason = "正在取数";
+      else if (state.mode === "noperm") reason = "无数据权限";
+      else if (state.mode === "fail") reason = "请先点重试";
+      const alerts = [];
+      if (state.mode === "loading") {
+        alerts.push(alertBox("info", "正在取数", "取数结束后会显示订单和工时。"));
+      }
+      if (state.mode === "fail") {
+        alerts.push(alertBox("danger", "取数失败", "样本原因：统计服务无响应。产线名称仍在，订单和工时已隐藏。", `<button type="button" class="btn primary" data-action="retry">重试</button>`));
+      }
+      if (state.mode === "noperm") {
+        alerts.push(alertBox("info", "无本产线数据权限", "当前账号「参观（样本）」无本产线数据权限。只显示产线名称，不显示订单号、产量和工时。"));
+      }
+      if (state.recovered && state.mode === "success") {
+        alerts.push(alertBox("success", "取数已恢复", `数据时间 ${esc(state.dataTime)}。订单和工时用的是最近一次成功样本，业务数量没有改。`));
+      }
+      const lagOn = state.scenario === "lag" && (state.mode === "success" || state.mode === "empty" || state.mode === "boundary");
+      if (lagOn) {
+        alerts.push(alertBox("warning", "数据滞后", `数据时间停在 ${esc(state.dataTime)}。本分支按已滞后演示，阈值 15 分钟（模拟，待确认）。订单和工时没有因滞后被改写。`));
+      }
+      if (state.mode === "boundary") {
+        alerts.push(alertBox("info", "边界样本", "订单号以 SAMPLE 开头，不是这张产线的在制订单。用来看零产出、剩余为 0 但仍显示已开工、完成超过计划。设备侧停机被拉长，TOEE 仍是 99.0%。"));
+      }
+      let sections = "";
+      if (data.kind === "loading") sections = loadingBlock();
+      else if (data.kind === "fail") sections = "";
+      else if (data.kind === "noperm") sections = maskedBlocks();
+      else sections = equipmentBlock(data) + lineBlock(data);
+      const staffSub = state.mode === "noperm" ? "不展示人数" : state.mode === "fail" ? "取数失败" : state.mode === "loading" ? "正在取数" : "口径待确认";
+      const ownerSub = state.mode === "loading" ? "正在取数" : state.mode === "fail" ? "取数失败" : state.mode === "noperm" ? "不展示" : state.mode === "empty" ? "空状态仍保留负责人" : "样本";
+      document.getElementById("view").innerHTML = `<div class="board">
+        <header class="header">
+          <div class="header-inner">
+            <div class="brand"><span class="brand-mark">winner</span><span class="brand-name">稳健医疗</span></div>
+            <h1>${esc(LINE)}</h1>
+            <div class="header-tools">
+              <div class="nav-block">
+                <div class="nav-row">
+                  <button type="button" class="nav-btn" disabled>返回大厅</button>
+                  <button type="button" class="nav-btn" disabled>返回车间</button>
+                </div>
+                <div class="nav-note">大厅 / 车间屏未纳入本次</div>
+              </div>
+              <div class="clock"><b id="clockTime">--:--:--</b><span><span id="clockDate"></span> · 现场时钟</span></div>
+            </div>
+          </div>
+        </header>
+        <main>
+          <div class="kpis">
+            <article class="kpi"><div class="ico date">${svg(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>`)}</div>
+              <div><div class="label">生产日期</div><div class="value">2026-11-19</div><div class="sub">业务日</div></div></article>
+            <article class="kpi"><div class="ico people">${svg(`<circle cx="9" cy="8" r="2.2"/><circle cx="16" cy="9" r="1.8"/><path d="M4.5 18c.6-2.4 2.4-3.6 4.5-3.6S13.4 15.6 14 18"/><path d="M14 14.6c1.4-.3 2.8.2 3.6 1.6"/>`)}</div>
+              <div><div class="label">产线人员</div>${kpiValue(data.staff)}<div class="sub" id="staffSub">${esc(staffSub)}</div></div></article>
+            <article class="kpi"><div class="ico owner">${svg(`<circle cx="12" cy="8" r="3"/><path d="M6 19c.8-3 2.8-4.5 6-4.5S17.2 16 18 19"/>`)}</div>
+              <div><div class="label">产线负责人</div>${kpiValue(data.owner)}<div class="sub">${esc(ownerSub)}</div></div></article>
+          </div>
+          <div class="fresh">
+            <div>数据时间 <b id="dataTime">${state.mode === "fail" || state.mode === "noperm" || state.mode === "loading" ? "—" : esc(state.dataTime)}</b>
+              <span class="muted"> · 统计范围 2026-11-19</span></div>
+            <div class="fresh-actions">
+              <button type="button" class="btn" data-action="range" ${rangeDisabled ? "disabled" : ""}>统计范围</button>
+              <button type="button" class="btn primary" data-action="refresh" ${refreshDisabled ? "disabled" : ""}>刷新</button>
+              ${reason ? `<span class="reason">${esc(reason)}</span>` : ""}
+            </div>
+          </div>
+          ${alerts.join("")}
+          ${sections}
+          <p class="sample-flag">样本数据，仅供走查</p>
+          ${dialogHtml(data)}
+        </main>
+      </div>`;
+      document.body.classList.toggle("modal-open", Boolean(state.dialog));
+      syncChrome(true);
+    }
+    function syncChrome(fromRender) {
+      const bar = document.getElementById("protoBar");
+      document.documentElement.style.setProperty("--bar-h", bar.offsetHeight + "px");
+      const narrow = window.matchMedia("(max-width: 960px)").matches;
+      document.body.dataset.viewport = narrow ? "narrow" : "desktop";
+      document.getElementById("viewportLabel").textContent = narrow ? "当前视口：窄屏" : "当前视口：桌面";
+      document.querySelectorAll(".orders-wide").forEach((el) => { el.hidden = narrow; });
+      document.querySelectorAll(".orders-narrow").forEach((el) => { el.hidden = !narrow; });
+      document.querySelectorAll("[data-scenario]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.scenario === state.scenario)));
+      document.querySelectorAll("[data-mode]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode)));
+      if (fromRender) {
+        const dlg = document.querySelector(".dialog");
+        if (dlg) bindDialog(dlg);
+      }
+      tick();
+    }
+    function bindDialog(dlg) {
+      dlg.focus();
+      dlg.addEventListener("keydown", (e) => {
+        if (e.key !== "Tab") return;
+        const list = [...dlg.querySelectorAll("button")].filter((b) => !b.disabled);
+        if (!list.length) return;
+        const first = list[0];
+        const last = list[list.length - 1];
+        if (e.shiftKey && (document.activeElement === first || document.activeElement === dlg)) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      });
+    }
+    function tick() {
+      const now = new Date();
+      const time = new Intl.DateTimeFormat("zh-CN", {
+        timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23"
+      }).format(now);
+      const parts = new Intl.DateTimeFormat("zh-CN", {
+        timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit", weekday: "long"
+      }).formatToParts(now);
+      const get = (type) => (parts.find((p) => p.type === type) || {}).value || "";
+      const tEl = document.getElementById("clockTime");
+      const dEl = document.getElementById("clockDate");
+      if (tEl) tEl.textContent = time.replace(/\s/g, "");
+      if (dEl) dEl.textContent = `${get("year")}/${get("month")}/${get("day")} ${get("weekday")}`;
+    }
+    function clearToast() {
+      if (toastTimer) clearTimeout(toastTimer);
+      const el = document.getElementById("toast");
+      if (el) el.hidden = true;
+    }
+    function toast(text) {
+      document.getElementById("toastText").textContent = text;
+      const el = document.getElementById("toast");
+      el.hidden = false;
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.hidden = true; }, 2800);
+    }
+    function startLoad(done) {
+      const token = ++loadToken;
+      state.mode = "loading";
+      state.dialog = null;
+      state.orderId = null;
+      clearToast();
+      render();
+      setTimeout(() => {
+        if (token !== loadToken) return;
+        done();
+        render();
+      }, 1100);
+    }
+    function goMode(mode) {
+      loadToken++;
+      state.mode = mode;
+      state.recovered = false;
+      state.dialog = null;
+      state.orderId = null;
+      clearToast();
+      render();
+    }
+    function setScenario(scenario) {
+      state.scenario = scenario;
+      state.dialog = null;
+      state.orderId = null;
+      render();
+    }
+    function reset() {
+      loadToken++;
+      state.scenario = "main";
+      state.mode = "success";
+      state.dataTime = "10:35:30";
+      state.recovered = false;
+      state.dialog = null;
+      state.orderId = null;
+      state.focusBack = null;
+      clearToast();
+      render();
+      toast("已重置为初始样本");
+    }
+    function refresh() {
+      if (state.mode === "loading" || state.mode === "noperm" || state.mode === "fail") return;
+      const prev = state.mode;
+      startLoad(() => {
+        state.mode = prev;
+        state.recovered = false;
+        state.dataTime = addMinutes(state.dataTime, 1);
+        toast(prev === "empty" ? "取数完成，当前产线仍无在制订单（样本）" : "取数完成（样本）");
+      });
+    }
+    function retry() {
+      startLoad(() => {
+        state.mode = "success";
+        state.recovered = true;
+        state.dataTime = "10:36:12";
+      });
+    }
+    function openDialog(kind, orderId) {
+      state.dialog = kind;
+      state.orderId = orderId || null;
+      state.focusBack = kind === "order" ? { order: orderId } : kind;
+      clearToast();
+      render();
+    }
+    function closeDialog() {
+      state.dialog = null;
+      state.orderId = null;
+      render();
+      focusBackEl();
+    }
+    function focusBackEl() {
+      const back = state.focusBack;
+      if (!back) return;
+      let el = null;
+      if (back === "range") el = document.querySelector("[data-action='range']");
+      if (back === "metric") el = document.querySelector("[data-action='metric']");
+      if (back.order) {
+        const nodes = [...document.querySelectorAll(`[data-order="${CSS.escape(back.order)}"] [data-action="detail"]`)];
+        el = nodes.find((n) => !n.closest("[hidden]")) || nodes[0];
+      }
+      if (el) el.focus();
+    }
+    document.body.addEventListener("click", (e) => {
+      if (e.target.classList && e.target.classList.contains("mask")) {
+        closeDialog();
+        return;
+      }
+      const act = e.target.closest("[data-action]");
+      if (!act || act.disabled) return;
+      const action = act.dataset.action;
+      if (action === "scenario") setScenario(act.dataset.scenario);
+      else if (action === "mode") {
+        if (act.dataset.mode === "loading") {
+          startLoad(() => {
+            state.mode = "success";
+            state.recovered = false;
+            toast("取数完成（样本）");
+          });
+        } else goMode(act.dataset.mode);
+      } else if (action === "reset") reset();
+      else if (action === "refresh") refresh();
+      else if (action === "retry") retry();
+      else if (action === "range") openDialog("range");
+      else if (action === "metric") openDialog("metric");
+      else if (action === "detail") {
+        const holder = act.closest("[data-order]");
+        if (holder) openDialog("order", holder.dataset.order);
+      } else if (action === "close") closeDialog();
+      else if (action === "toast-close") clearToast();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && state.dialog) {
+        e.preventDefault();
+        closeDialog();
+        return;
+      }
+      if (e.key === "Enter") {
+        const row = e.target.closest && e.target.closest("[data-order]");
+        if (row && e.target.tagName !== "BUTTON") {
+          e.preventDefault();
+          openDialog("order", row.dataset.order);
+        }
+      }
+    });
+    window.addEventListener("resize", () => syncChrome(false));
+    setInterval(tick, 1000);
+    render();
+  </script>
+</body>
+</html>
