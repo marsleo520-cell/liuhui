@@ -1,0 +1,27 @@
+{
+  "note": "看板框架底图。图里只有底色，没有文字、数字和柱高。程序把内容叠在底图上。圆角和阴影仍由样式处理，底图按元素宽高拉伸。",
+  "scale": 2,
+  "slices": [
+    { "id": "page-bg", "file": "assets/page-bg.png", "use": "body 页面底", "cssPx": { "width": 1440, "height": 480 } },
+    { "id": "header", "file": "assets/header.png", "use": ".header 顶栏", "cssPx": { "width": 1440, "height": 88 } },
+    { "id": "panel", "file": "assets/panel.png", "use": ".panel 产线信息、产线计划信息、产量信息", "cssPx": { "width": 640, "height": 160 } },
+    { "id": "crew", "file": "assets/crew.png", "use": ".crew 人员和负责人", "cssPx": { "width": 720, "height": 72 } },
+    { "id": "card", "file": "assets/card.png", "use": ".toee 与 .comp 指标卡", "cssPx": { "width": 320, "height": 140 } },
+    { "id": "hour-run", "file": "assets/hour-run.png", "use": ".hour-run", "cssPx": { "width": 220, "height": 128 } },
+    { "id": "hour-idle", "file": "assets/hour-idle.png", "use": ".hour-idle", "cssPx": { "width": 220, "height": 128 } },
+    { "id": "hour-down", "file": "assets/hour-down.png", "use": ".hour-down", "cssPx": { "width": 220, "height": 128 } },
+    { "id": "hour-change", "file": "assets/hour-change.png", "use": ".hour-change", "cssPx": { "width": 220, "height": 128 } },
+    { "id": "hour-plan", "file": "assets/hour-plan.png", "use": ".hour-plan", "cssPx": { "width": 220, "height": 128 } },
+    { "id": "chart-well", "file": "assets/chart-well.png", "use": ".plot 产量图槽", "cssPx": { "width": 960, "height": 188 } },
+    { "id": "pill-run", "file": "assets/pill-run.png", "use": ".state-run", "cssPx": { "width": 160, "height": 40 } },
+    { "id": "pill-idle", "file": "assets/pill-idle.png", "use": ".state-idle", "cssPx": { "width": 160, "height": 40 } },
+    { "id": "pill-down", "file": "assets/pill-down.png", "use": ".state-down", "cssPx": { "width": 160, "height": 40 } },
+    { "id": "pill-change", "file": "assets/pill-change.png", "use": ".state-change", "cssPx": { "width": 160, "height": 40 } },
+    { "id": "pill-plan", "file": "assets/pill-plan.png", "use": ".state-plan", "cssPx": { "width": 160, "height": 40 } },
+    { "id": "btn", "file": "assets/btn.png", "use": ".btn", "cssPx": { "width": 120, "height": 32 } },
+    { "id": "btn-primary", "file": "assets/btn-primary.png", "use": ".btn.primary", "cssPx": { "width": 120, "height": 32 } },
+    { "id": "table-head", "file": "assets/table-head.png", "use": ".grid th 表头", "cssPx": { "width": 280, "height": 56 } },
+    { "id": "ico-people", "file": "assets/ico-people.png", "use": ".ico.people", "cssPx": { "width": 40, "height": 40 } },
+    { "id": "ico-owner", "file": "assets/ico-owner.png", "use": ".ico.owner", "cssPx": { "width": 40, "height": 40 } }
+  ]
+}
