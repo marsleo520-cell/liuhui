@@ -192,13 +192,10 @@
       width: 40px;
       height: 40px;
       border-radius: 6px;
-      display: grid;
-      place-items: center;
+      display: block;
+      object-fit: cover;
       flex: none;
     }
-    .ico.date { background: var(--primary-light); color: var(--primary); }
-    .ico.people { background: var(--success-light) url("assets/ico-people.png") center / 100% 100% no-repeat; color: var(--success); }
-    .ico.owner { background: var(--warning-light) url("assets/ico-owner.png") center / 100% 100% no-repeat; color: var(--warning); }
     .kpi .label, .crew .label { color: var(--muted); font-size: 12px; line-height: 20px; }
     .kpi .value, .crew .value { font-size: 20px; line-height: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
     .kpi .sub { color: var(--muted); font-size: 12px; line-height: 20px; }
@@ -791,9 +788,6 @@
       if (state.mode === "loading") return { kind: "loading", staff: null, owner: null };
       return { orders: MAIN_ORDERS, times: MAIN_TIMES, toee: "99.0", staff: "25", owner: "杜旭", runStatus: "运行", hourly: MAIN_QTY, kind: "data" };
     }
-    function svg(body) {
-      return `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
-    }
     function barHtml(times) {
       const total = times.reduce((s, t) => s + (t.cents || 0), 0);
       if (!total) return "";
@@ -916,12 +910,12 @@
     function crewHtml(data) {
       return `<div class="crew">
         <div class="crew-item">
-          <div class="ico people">${svg(`<circle cx="9" cy="8" r="2.2"/><circle cx="16" cy="9" r="1.8"/><path d="M4.5 18c.6-2.4 2.4-3.6 4.5-3.6S13.4 15.6 14 18"/><path d="M14 14.6c1.4-.3 2.8.2 3.6 1.6"/>`)}</div>
+          <img class="ico people" src="assets/ico-people.png" alt="" width="40" height="40">
           <div><div class="label">产线人员</div>${kpiValue(data.staff)}</div>
         </div>
         <i class="vbar"></i>
         <div class="crew-item">
-          <div class="ico owner">${svg(`<circle cx="12" cy="8" r="3"/><path d="M6 19c.8-3 2.8-4.5 6-4.5S17.2 16 18 19"/>`)}</div>
+          <img class="ico owner" src="assets/ico-owner.png" alt="" width="40" height="40">
           <div><div class="label">产线负责人</div>${kpiValue(data.owner)}</div>
         </div>
       </div>`;

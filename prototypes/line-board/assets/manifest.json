@@ -21,7 +21,7 @@
     { "id": "btn", "file": "assets/btn.png", "use": ".btn", "cssPx": { "width": 120, "height": 32 } },
     { "id": "btn-primary", "file": "assets/btn-primary.png", "use": ".btn.primary", "cssPx": { "width": 120, "height": 32 } },
     { "id": "table-head", "file": "assets/table-head.png", "use": ".grid th 表头", "cssPx": { "width": 280, "height": 56 } },
-    { "id": "ico-people", "file": "assets/ico-people.png", "use": ".ico.people", "cssPx": { "width": 40, "height": 40 } },
-    { "id": "ico-owner", "file": "assets/ico-owner.png", "use": ".ico.owner", "cssPx": { "width": 40, "height": 40 } }
+    { "id": "ico-people", "file": "assets/ico-people.png", "use": "产线人员（人数）图标，含底色和人形", "cssPx": { "width": 40, "height": 40 }, "imagePx": { "width": 80, "height": 80 } },
+    { "id": "ico-owner", "file": "assets/ico-owner.png", "use": "产线负责人图标，含底色和人形", "cssPx": { "width": 40, "height": 40 }, "imagePx": { "width": 80, "height": 80 } }
   ]
 }
