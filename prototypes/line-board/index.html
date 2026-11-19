@@ -7,14 +7,14 @@
   <style>
     :root {
       --bar-h: 56px;
-      --board: #E5F8F8;
-      --header: #0097AE;
-      --teal: #0C7E90;
-      --primary: #009090;
-      --primary-hover: #209E9E;
-      --primary-light: #E7F6F6;
-      --success: #00AC97;
-      --success-light: #E8FFF8;
+      --board: #F0F7FA;
+      --header: #00B8A0;
+      --teal: #00A0C8;
+      --primary: #00B8A0;
+      --primary-hover: #00A0C8;
+      --primary-light: #E5F8F4;
+      --success: #00B8A0;
+      --success-light: #E5F8F4;
       --warning: #E37318;
       --warning-light: #FFF6E8;
       --danger: #D54941;
@@ -24,14 +24,14 @@
       --muted: #8B8B8B;
       --line: #DCDCDC;
       --card: #ffffff;
-      --run: #12A37A;
-      --run-bg: #D9F6EC;
+      --run: #00B8A0;
+      --run-bg: #E5F8F4;
       --idle: #C56A10;
       --idle-bg: #FFF1DC;
       --down: #5C727C;
       --down-bg: #E7EEEF;
-      --change: #0E78A8;
-      --change-bg: #DDF3FB;
+      --change: #00A0C8;
+      --change-bg: #E5F4FA;
       --plan: #0B6E78;
       --plan-bg: #D4F4F6;
     }
@@ -39,7 +39,7 @@
     [hidden] { display: none !important; }
     html, body { margin: 0; }
     body {
-      background: var(--board);
+      background: linear-gradient(180deg, #F0F7FA 0%, #E7F4F2 100%);
       color: var(--title);
       font-family: "PingFang SC", "Microsoft YaHei", "WenQuanYi Micro Hei", system-ui, sans-serif;
       font-size: 14px;
@@ -85,12 +85,10 @@
     .btn.text:hover { background: var(--primary-light); }
     .btn[aria-pressed="true"] { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
     .btn:disabled { background: #F3F3F3; border-color: var(--line); color: var(--muted); cursor: not-allowed; }
-    .btn.primary:disabled { background: #B5E0E0; border-color: #B5E0E0; color: #fff; }
+    .btn.primary:disabled { background: #A8E6DC; border-color: #A8E6DC; color: #fff; }
 
     .header {
-      background:
-        radial-gradient(closest-side at 50% 50%, rgba(255,255,255,.38), rgba(255,255,255,0) 70%),
-        linear-gradient(90deg, #0097AE 0%, #00A8BE 50%, #0097AE 100%);
+      background: linear-gradient(90deg, #00B8A0 0%, #00A0C8 100%);
       color: #fff;
     }
     .header-inner {
@@ -104,7 +102,7 @@
     .brand { display: flex; align-items: center; gap: 8px; justify-self: start; }
     .brand-mark {
       background: #fff;
-      color: #0A6E80;
+      color: #00A0C8;
       font-weight: 700;
       font-size: 14px;
       line-height: 22px;
@@ -147,7 +145,9 @@
     .clock span { font-size: 12px; line-height: 20px; }
 
     .board { padding: 16px 24px 32px; }
-    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .kpis { display: flex; }
+    .people-block { display: flex; align-items: center; gap: 16px; min-width: 420px; }
+    .vbar { width: 1px; height: 40px; background: var(--line); flex: none; }
     .kpi {
       background: var(--card);
       border: 1px solid rgba(0, 163, 184, .18);
@@ -228,7 +228,25 @@
     }
     .sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
     .sec-h h2 { font-size: 20px; line-height: 28px; display: flex; align-items: center; gap: 8px; }
-    .diamond { width: 8px; height: 8px; background: #00A3B8; transform: rotate(45deg); display: inline-block; flex: none; }
+    .diamond { width: 8px; height: 8px; background: #00B8A0; transform: rotate(45deg); display: inline-block; flex: none; }
+    .state-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 40px;
+      padding: 0 16px;
+      border-radius: 20px;
+      color: #fff;
+      font-size: 20px;
+      line-height: 28px;
+      font-weight: 700;
+    }
+    .state-pill i { width: 10px; height: 10px; border-radius: 50%; background: #fff; flex: none; }
+    .state-run { background: #00B8A0; }
+    .state-idle { background: #E37318; }
+    .state-down { background: #5C727C; }
+    .state-change { background: #00A0C8; }
+    .state-plan { background: #0B6E78; }
     .muted { color: var(--muted); font-size: 12px; line-height: 20px; }
 
     .equip-top { display: grid; grid-template-columns: 260px 1fr; gap: 16px; }
@@ -274,7 +292,7 @@
     .seg-plan { background: var(--plan); }
     .story { margin-top: 12px; font-size: 16px; line-height: 24px; color: var(--title); }
     .caption { margin-top: 4px; }
-    .c-run { color: #0C8A62; }
+    .c-run { color: #00B8A0; }
     .c-idle { color: var(--idle); }
     .c-down { color: var(--down); }
     .c-change { color: var(--change); }
@@ -289,7 +307,7 @@
     .hour-plan { background: var(--plan-bg); }
     .hour-label { font-size: 14px; line-height: 22px; color: var(--text); }
     .hour-val { font-size: 28px; line-height: 36px; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .hour-run .hour-val { color: #0C8A62; }
+    .hour-run .hour-val { color: #00B8A0; }
     .hour-idle .hour-val { color: var(--idle); }
     .hour-down .hour-val { color: #3E525C; }
     .hour-change .hour-val { color: var(--change); }
@@ -306,7 +324,25 @@
     .empty-inline { color: var(--text); padding: 24px 0; }
 
     .table-wrap { overflow-x: auto; }
-    table.grid { width: 100%; border-collapse: collapse; min-width: 980px; }
+    table.grid { width: 100%; border-collapse: collapse; min-width: 1180px; }
+    .yields { display: flex; gap: 24px; margin-bottom: 16px; }
+    .yields b { display: block; font-size: 28px; line-height: 36px; color: #00A0C8; font-variant-numeric: tabular-nums; }
+    .yields span { color: var(--muted); font-size: 12px; line-height: 20px; }
+    .chart-scroll { overflow-x: auto; }
+    .chart {
+      min-width: 768px;
+      height: 196px;
+      display: grid;
+      grid-template-columns: repeat(24, minmax(0, 1fr));
+      gap: 6px;
+    }
+    .chart-col { display: flex; flex-direction: column; align-items: center; height: 100%; }
+    .chart-col .stem { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+    .chart-col i { display: block; width: 100%; background: #00B8A0; border-radius: 3px 3px 0 0; }
+    .chart-col.now i { background: #00A0C8; }
+    .chart-col.future i { background: #D5E3EA; }
+    .chart-col em { font-style: normal; margin-top: 4px; font-size: 12px; line-height: 20px; color: var(--muted); }
+    .chart-col.now em { color: #00A0C8; font-weight: 700; }
     .grid th {
       background: #F3F3F3;
       color: var(--text);
@@ -496,7 +532,9 @@
       .header h1 { font-size: 20px; line-height: 28px; }
       .brand-name { display: none; }
       .board { padding: 12px 12px 48px; }
-      .kpis, .equip-top, .split, .defs div { grid-template-columns: 1fr; }
+      .kpis, .equip-top, .split, .defs div, .yields { grid-template-columns: 1fr; }
+      .kpis, .yields { display: grid; }
+      .people-block { min-width: 0; }
       .hours { grid-template-columns: 1fr 1fr; }
       .hour:last-child:nth-child(odd) { grid-column: 1 / -1; }
       .clock { text-align: right; }
@@ -534,8 +572,8 @@
   <script>
     const LINE = "介入/骨科自动化生产线";
     const MAIN_ORDERS = [
-      { id: "1000929211", material: "504-008083", status: "进行中", plan: 6600, done: 1500, remain: 5100, unit: "PCS" },
-      { id: "1000946774", material: "504-006064", status: "已开工", plan: 542, done: 468, remain: 74, unit: "PCS" }
+      { id: "1000929211", material: "504-008083", status: "进行中", plan: 6600, done: 1500, remain: 5100, unit: "PCS", speed: 85 },
+      { id: "1000946774", material: "504-006064", status: "已开工", plan: 542, done: 468, remain: 74, unit: "PCS", speed: 37 }
     ];
     const MAIN_TIMES = [
       { key: "run", name: "运行", label: "运行/今日", cents: 59 },
@@ -545,10 +583,14 @@
       { key: "plan", name: "计划停机", label: "计划停机/今日", cents: 200 }
     ];
     const BOUND_ORDERS = [
-      { id: "SAMPLE-B-001", material: "SAMPLE-MAT-001", status: "进行中", plan: 6600, done: 0, remain: 6600, unit: "PCS" },
-      { id: "SAMPLE-B-002", material: "SAMPLE-MAT-002", status: "已开工", plan: 542, done: 542, remain: 0, unit: "PCS" },
-      { id: "SAMPLE-B-003", material: "SAMPLE-MAT-003", status: "进行中", plan: 6600, done: 7100, remain: 0, unit: "PCS" }
+      { id: "SAMPLE-B-001", material: "SAMPLE-MAT-001", status: "进行中", plan: 6600, done: 0, remain: 6600, unit: "PCS", speed: 110 },
+      { id: "SAMPLE-B-002", material: "SAMPLE-MAT-002", status: "已开工", plan: 542, done: 542, remain: 0, unit: "PCS", speed: 37 },
+      { id: "SAMPLE-B-003", material: "SAMPLE-MAT-003", status: "进行中", plan: 6600, done: 7100, remain: 0, unit: "PCS", speed: 100 }
     ];
+    const SHIFT_HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5, 6, 7];
+    const MAIN_QTY = [640, 820, 508, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const BOUND_QTY = [420, 180, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    const ZERO_QTY = SHIFT_HOURS.map(() => 0);
     const BOUND_TIMES = [
       { key: "run", name: "运行", label: "运行/今日", cents: 5 },
       { key: "idle", name: "待机", label: "待机/今日", cents: 0 },
@@ -606,11 +648,21 @@
     }
     function tag(status) {
       const kind = status === "进行中" ? "success" : status === "已开工" ? "warning" : "default";
-      return `<span class="tag tag-${kind}" title="状态含义待确认">${esc(status)}</span>`;
+      return `<span class="tag tag-${kind}">${esc(status)}</span>`;
+    }
+    function remainMinutes(order) {
+      if (order.speed == null || order.speed <= 0) return null;
+      if (order.remain <= 0) return 0;
+      return Math.ceil(order.remain / order.speed);
+    }
+    function hourIndex(hms) {
+      const hour = Number(String(hms || "").split(":")[0]);
+      const index = SHIFT_HOURS.indexOf(hour);
+      return index < 0 ? 0 : index;
     }
     function pack() {
       if (state.mode === "boundary") {
-        return { orders: BOUND_ORDERS, times: BOUND_TIMES, toee: "99.0", staff: "25", owner: "杜旭", kind: "data" };
+        return { orders: BOUND_ORDERS, times: BOUND_TIMES, toee: "99.0", staff: "25", owner: "杜旭", runStatus: "停机", hourly: BOUND_QTY, kind: "data" };
       }
       if (state.mode === "empty") {
         return {
@@ -619,24 +671,18 @@
           toee: null,
           staff: "0",
           owner: "杜旭",
+          runStatus: "待机",
+          hourly: ZERO_QTY,
           kind: "empty"
         };
       }
       if (state.mode === "fail") return { kind: "fail", staff: "—", owner: "—" };
       if (state.mode === "noperm") return { kind: "noperm", staff: "无权限", owner: "无权限" };
       if (state.mode === "loading") return { kind: "loading", staff: null, owner: null };
-      return { orders: MAIN_ORDERS, times: MAIN_TIMES, toee: "99.0", staff: "25", owner: "杜旭", kind: "data" };
+      return { orders: MAIN_ORDERS, times: MAIN_TIMES, toee: "99.0", staff: "25", owner: "杜旭", runStatus: "运行", hourly: MAIN_QTY, kind: "data" };
     }
     function svg(body) {
       return `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
-    }
-    function storyHtml(times) {
-      const total = times.reduce((s, t) => s + (t.cents || 0), 0);
-      if (!total) return `<p class="empty-inline">今日暂无报工工时</p>`;
-      const sorted = [...times].sort((a, b) => (b.cents || 0) - (a.cents || 0));
-      const run = times.find((t) => t.key === "run");
-      return `<p class="story">五段合计 <b>${fmtCents(total)} h</b>。最长是 <b class="c-${sorted[0].key}">${esc(sorted[0].name)} ${fmtCents(sorted[0].cents)} h</b>，其次 <b class="c-${sorted[1].key}">${esc(sorted[1].name)} ${fmtCents(sorted[1].cents)} h</b>。运行 <b class="c-run">${fmtCents(run.cents)} h</b>，占已归集 ${pctOf(run.cents, total)}。</p>
-        <p class="caption muted">条形按五段工时内部占比绘制，不是占整班。</p>`;
     }
     function barHtml(times) {
       const total = times.reduce((s, t) => s + (t.cents || 0), 0);
@@ -689,9 +735,11 @@
           <td>${esc(order.id)}</td>
           <td>${esc(order.material)}</td>
           <td class="num">${fmtInt(order.plan)}</td>
-          <td>${esc(order.unit)}</td>
           <td class="num">${fmtInt(order.done)}</td>
           <td class="num ${remainClass(order)}">${fmtInt(order.remain)}</td>
+          <td>${esc(order.unit)}</td>
+          <td class="num">${order.speed == null ? "—" : fmtInt(order.speed)}</td>
+          <td class="num">${remainMinutes(order) == null ? "—" : fmtInt(remainMinutes(order))}</td>
           <td>${progressCell(order)}</td>
           <td><button type="button" class="link" data-action="detail">详情</button></td>
         </tr>`;
@@ -710,31 +758,31 @@
         return `<article class="ocard row-${p.cls}" data-order="${esc(order.id)}" data-action="detail" tabindex="0">
           <div class="ocard-top">${tag(order.status)}<button type="button" class="link" data-action="detail">详情</button></div>
           <div class="oid">${esc(order.id)}</div>
-          <div class="o-meta">物料号 ${esc(order.material)} · ${esc(order.unit)}</div>
+          <div class="o-meta">产品料号 ${esc(order.material)}</div>
           ${progressCell(order)}
-          <div class="o-nums"><span>计划 ${fmtInt(order.plan)}</span><span>完成 ${fmtInt(order.done)}</span><span>剩余 ${fmtInt(order.remain)}</span></div>
+          <div class="o-nums"><span>计划 ${fmtInt(order.plan)}</span><span>完成 ${fmtInt(order.done)}</span><span>剩余 ${fmtInt(order.remain)} ${esc(order.unit)}</span><span>速度 ${order.speed == null ? "—" : fmtInt(order.speed)} PCS/分钟</span><span>预计 ${remainMinutes(order) == null ? "—" : fmtInt(remainMinutes(order))} 分钟</span></div>
         </article>`;
       }).join("");
       return `<div class="orders-narrow" hidden>${cards}</div>`;
     }
     const headRow = `<tr>
-            <th>状态</th><th>订单号</th><th>物料号</th><th class="num">订单计划</th><th>单位</th>
-            <th class="num">订单完成</th><th class="num">订单剩余</th><th>订单进度</th><th>操作</th>
+            <th>状态</th><th>订单号</th><th>产品料号</th><th class="num">订单计划</th>
+            <th class="num">订单完成</th><th class="num">订单剩余</th><th>单位</th>
+            <th class="num">生产速度(PCS/分钟)</th><th class="num">预计剩余时长(分钟)</th><th>订单进度</th><th>操作</th>
           </tr>`;
     function ordersBlock(orders) {
       if (!orders.length) {
         return `<div class="orders-wide table-wrap"><table class="grid">
             <thead>${headRow}</thead>
-            <tbody><tr><td colspan="9"><div class="empty-box"><b>当前产线暂无在制订单</b></div></td></tr></tbody>
+            <tbody><tr><td colspan="11"><div class="empty-box"><b>当前产线暂无在制订单</b></div></td></tr></tbody>
           </table></div>
           <div class="orders-narrow" hidden>
-            <div class="muted">状态 · 订单号 · 物料号 · 订单计划 · 单位 · 订单完成 · 订单剩余 · 订单进度</div>
+            <div class="muted">状态 · 订单号 · 产品料号 · 订单计划 · 订单完成 · 订单剩余 · 单位 · 生产速度 · 预计剩余时长 · 订单进度</div>
             <div class="empty-box"><b>当前产线暂无在制订单</b></div>
           </div>`;
       }
       return ordersTable(orders) + ordersCards(orders) + `<div class="table-foot">
         <span class="count">共 ${orders.length} 项数据</span>
-        <span class="legend">订单进度 = 订单完成 / 订单计划，本屏计算。低于 50% 警告色，80% 及以上成功色，超过计划危险色。阈值待确认。</span>
       </div>`;
     }
     function alertBox(kind, title, text, action) {
@@ -747,19 +795,19 @@
     }
     function equipmentBlock(data) {
       const toeeText = data.toee ? `${data.toee}%` : "—";
-      const toeeTag = data.toee ? `<span class="tag tag-warning">口径待确认</span>` : `<span class="tag tag-default">无工时</span>`;
+      const stateClass = { 运行: "run", 待机: "idle", 停机: "down", 换线: "change", 计划停机: "plan" }[data.runStatus] || "idle";
       return `<section class="panel" data-block="equipment">
-        <div class="sec-h"><h2><i class="diamond"></i>设备信息</h2><span class="muted">今日工时</span></div>
+        <div class="sec-h"><h2><i class="diamond"></i>设备信息</h2><span class="state-pill state-${stateClass}" id="runState"><i></i>${esc(data.runStatus || "—")}</span></div>
         <div class="equip-top">
           <div class="toee">
             <div class="label">TOEE（时间稼动率）/ 今日</div>
-            <div class="toee-row"><div class="toee-num" id="toeeValue">${toeeText}</div>${toeeTag}</div>
+            <div class="toee-row"><div class="toee-num" id="toeeValue">${toeeText}</div></div>
             <button type="button" class="btn text" data-action="metric">查看口径</button>
           </div>
           <div class="comp">
             <div class="comp-h"><span>已归集工时分布</span><b>${data.kind === "empty" ? "—" : fmtCents(data.times.reduce((s, t) => s + (t.cents || 0), 0)) + " h"}</b></div>
             ${barHtml(data.times)}
-            ${storyHtml(data.times)}
+            ${data.kind === "empty" ? `<p class="empty-inline">今日暂无报工工时</p>` : ""}
           </div>
         </div>
         ${hoursHtml(data.times)}
@@ -773,6 +821,36 @@
         ${count ? "" : `<div class="table-foot"><span class="count">共 0 项数据</span></div>`}
       </section>`;
     }
+    function outputBlock(data) {
+      const qty = data.hourly || ZERO_QTY;
+      const total = qty.reduce((sum, n) => sum + n, 0);
+      const now = hourIndex(state.dataTime);
+      const max = Math.max(...qty, 0);
+      const peak = qty.reduce((best, n, i) => (n > qty[best] ? i : best), 0);
+      const cols = SHIFT_HOURS.map((hour, i) => {
+        const value = qty[i];
+        const cls = i === now ? "now" : i > now ? "future" : "past";
+        const height = value > 0 && max ? Math.max(4, Math.round((value / max) * 100)) : 2;
+        const label = String(hour).padStart(2, "0");
+        return `<div class="chart-col ${cls}" title="${label}:00 ${fmtInt(value)} PCS">
+          <div class="stem"><i style="height:${height}%"></i></div>
+          <em>${label}</em>
+        </div>`;
+      }).join("");
+      const today = total ? fmtInt(total) : "0";
+      const current = qty[now] == null ? "—" : fmtInt(qty[now]);
+      const peakText = total ? `${String(SHIFT_HOURS[peak]).padStart(2, "0")}:00 ${fmtInt(qty[peak])}` : "—";
+      return `<section class="panel" data-block="output">
+        <div class="sec-h"><h2><i class="diamond"></i>产量信息</h2><span class="muted">08:00 – 次日 08:00</span></div>
+        <div class="yields">
+          <div><span>今日产量 PCS</span><b id="todayQty">${today}</b></div>
+          <div><span>当前小时 PCS</span><b id="hourQty">${current}</b></div>
+          <div><span>最高小时</span><b>${peakText}</b></div>
+        </div>
+        ${total ? "" : `<p class="empty-inline">暂无产量</p>`}
+        <div class="chart-scroll"><div class="chart" role="img" aria-label="24小时产量，从08:00到次日08:00">${cols}</div></div>
+      </section>`;
+    }
     function loadingBlock() {
       return `<section class="panel" data-block="equipment">
           <div class="sec-h"><h2><i class="diamond"></i>设备信息</h2></div>
@@ -782,14 +860,19 @@
         <section class="panel" data-block="line">
           <div class="sec-h"><h2><i class="diamond"></i>产线信息</h2></div>
           <div class="table-wrap"><table class="grid"><thead>${headRow}</thead><tbody>
-            <tr><td colspan="9"><div class="sk sk-line"></div></td></tr>
-            <tr><td colspan="9"><div class="sk sk-line"></div></td></tr>
+            <tr><td colspan="11"><div class="sk sk-line"></div></td></tr>
+            <tr><td colspan="11"><div class="sk sk-line"></div></td></tr>
           </tbody></table></div>
+        </section>
+        <section class="panel" data-block="output">
+          <div class="sec-h"><h2><i class="diamond"></i>产量信息</h2></div>
+          <div class="sk sk-block"></div>
         </section>`;
     }
     function maskedBlocks() {
       return `<section class="panel" data-block="equipment"><div class="sec-h"><h2><i class="diamond"></i>设备信息</h2></div><p class="masked">无权限</p></section>
-        <section class="panel" data-block="line"><div class="sec-h"><h2><i class="diamond"></i>产线信息</h2></div><p class="masked">无权限，订单号不展示</p></section>`;
+        <section class="panel" data-block="line"><div class="sec-h"><h2><i class="diamond"></i>产线信息</h2></div><p class="masked">无权限，订单号不展示</p></section>
+        <section class="panel" data-block="output"><div class="sec-h"><h2><i class="diamond"></i>产量信息</h2></div><p class="masked">无权限</p></section>`;
     }
     function kpiValue(text) {
       if (text == null) return `<div class="sk sk-line" style="width:88px"></div>`;
@@ -798,9 +881,7 @@
     function dialogHtml(data) {
       if (!state.dialog) return "";
       if (state.dialog === "range") {
-        return mask(`统计范围`, "range", `
-          <p class="note">样本日固定为 2026-11-19。</p>
-          <p class="note">切换其他日期尚未接入，避免画成已经可以按日回看。本按钮不修改订单。</p>`);
+        return mask(`统计范围`, "range", `<p class="note">统计日 2026-11-19。</p>`);
       }
       if (state.dialog === "metric") {
         const times = data.times || [];
@@ -809,24 +890,20 @@
         const rows = times.length
           ? times.map((t) => `<div><dt>${esc(t.name)}</dt><dd>${t.cents == null ? "—" : fmtCents(t.cents) + " h"}</dd></div>`).join("")
           : `<div><dt>五段工时</dt><dd>—</dd></div>`;
-        const compare = total && run
-          ? `<p class="note">运行占已归集 ${pctOf(run.cents, total)}。这是五段相加后的算术，不是另一套 TOEE。界面上的 ${esc(data.toee)}% 与此对不上，本屏不自动改正。</p>
-             <p class="note">正式分母是否含计划停机、换线、未开机时间，待确认。口径版本：待确认。</p>`
-          : `<p class="note">当前没有报工工时，不能对照稼动率。口径版本：待确认。</p>`;
+        const share = total && run ? pctOf(run.cents, total) : "—";
         return mask(`TOEE 口径`, "metric", `
           <dl class="defs">
-            <div><dt>界面上的 TOEE</dt><dd>${data.toee ? data.toee + "%" : "—"}</dd></div>
+            <div><dt>TOEE</dt><dd>${data.toee ? data.toee + "%" : "—"}</dd></div>
             <div><dt>五段工时合计</dt><dd>${total ? fmtCents(total) + " h" : "—"}</dd></div>
+            <div><dt>运行占已归集</dt><dd>${share}</dd></div>
             ${rows}
-          </dl>
-          ${compare}`);
+          </dl>`);
       }
       const order = (data.orders || []).find((item) => item.id === state.orderId);
       if (!order) return mask("订单", "order", `<p class="note">未找到该订单（样本）。</p>`);
       const p = progressInfo(order);
       const heroCls = p.cls === "low" ? "t-low" : p.cls === "over" ? "t-over" : p.cls === "ok" ? "t-ok" : "t-mid";
-      const zeroNote = order.remain === 0 ? `<p class="note">剩余为 0，状态仍是「${esc(order.status)}」。是否离开在制列表，待确认。</p>` : "";
-      const overNote = p.overQty ? `<p class="note">完成超过计划 ${fmtInt(p.overQty)} ${esc(order.unit)}。</p>` : "";
+      const minutes = remainMinutes(order);
       return mask(`订单 ${esc(order.id)}`, "order", `
         <div class="remain-hero">
           <span>订单剩余</span>
@@ -837,17 +914,13 @@
         <div class="split">
           <div><span>状态</span><b>${esc(order.status)}</b></div>
           <div><span>订单号</span><b>${esc(order.id)}</b></div>
-          <div><span>物料号</span><b>${esc(order.material)}</b></div>
+          <div><span>产品料号</span><b>${esc(order.material)}</b></div>
           <div><span>单位</span><b>${esc(order.unit)}</b></div>
           <div><span>订单计划</span><b>${fmtInt(order.plan)}</b></div>
           <div><span>订单完成</span><b>${fmtInt(order.done)}</b></div>
-          <div><span>数据时间</span><b>${esc(state.dataTime)}</b></div>
-          <div><span>产线</span><b>${esc(LINE)}</b></div>
-        </div>
-        <p class="note" style="margin-top:16px">进行中与已开工的差别待确认。</p>
-        ${zeroNote}
-        ${overNote}
-        <p class="note">本屏只读。完工、改数量、改派不在看板上办理。</p>`);
+          <div><span>生产速度</span><b>${order.speed == null ? "—" : fmtInt(order.speed) + " PCS/分钟"}</b></div>
+          <div><span>预计剩余时长</span><b>${minutes == null ? "—" : fmtInt(minutes) + " 分钟"}</b></div>
+        </div>`);
     }
     function mask(title, kind, body) {
       return `<div class="mask" data-testid="mask">
@@ -881,18 +954,13 @@
       }
       const lagOn = state.scenario === "lag" && (state.mode === "success" || state.mode === "empty" || state.mode === "boundary");
       if (lagOn) {
-        alerts.push(alertBox("warning", "数据滞后", `数据时间停在 ${esc(state.dataTime)}。本分支按已滞后演示，阈值 15 分钟（模拟，待确认）。订单和工时没有因滞后被改写。`));
-      }
-      if (state.mode === "boundary") {
-        alerts.push(alertBox("info", "边界样本", "订单号以 SAMPLE 开头，不是这张产线的在制订单。用来看零产出、剩余为 0 但仍显示已开工、完成超过计划。设备侧停机被拉长，TOEE 仍是 99.0%。"));
+        alerts.push(alertBox("warning", "数据滞后", `数据时间停在 ${esc(state.dataTime)}。`));
       }
       let sections = "";
       if (data.kind === "loading") sections = loadingBlock();
       else if (data.kind === "fail") sections = "";
       else if (data.kind === "noperm") sections = maskedBlocks();
-      else sections = equipmentBlock(data) + lineBlock(data);
-      const staffSub = state.mode === "noperm" ? "不展示人数" : state.mode === "fail" ? "取数失败" : state.mode === "loading" ? "正在取数" : "口径待确认";
-      const ownerSub = state.mode === "loading" ? "正在取数" : state.mode === "fail" ? "取数失败" : state.mode === "noperm" ? "不展示" : state.mode === "empty" ? "空状态仍保留负责人" : "样本";
+      else sections = equipmentBlock(data) + lineBlock(data) + outputBlock(data);
       document.getElementById("view").innerHTML = `<div class="board">
         <header class="header">
           <div class="header-inner">
@@ -906,22 +974,22 @@
                 </div>
                 <div class="nav-note">大厅 / 车间屏未纳入本次</div>
               </div>
-              <div class="clock"><b id="clockTime">--:--:--</b><span><span id="clockDate"></span> · 现场时钟</span></div>
+              <div class="clock"><b id="clockTime">--:--:--</b><span id="clockDate"></span></div>
             </div>
           </div>
         </header>
         <main>
           <div class="kpis">
-            <article class="kpi"><div class="ico date">${svg(`<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>`)}</div>
-              <div><div class="label">生产日期</div><div class="value">2026-11-19</div><div class="sub">业务日</div></div></article>
-            <article class="kpi"><div class="ico people">${svg(`<circle cx="9" cy="8" r="2.2"/><circle cx="16" cy="9" r="1.8"/><path d="M4.5 18c.6-2.4 2.4-3.6 4.5-3.6S13.4 15.6 14 18"/><path d="M14 14.6c1.4-.3 2.8.2 3.6 1.6"/>`)}</div>
-              <div><div class="label">产线人员</div>${kpiValue(data.staff)}<div class="sub" id="staffSub">${esc(staffSub)}</div></div></article>
-            <article class="kpi"><div class="ico owner">${svg(`<circle cx="12" cy="8" r="3"/><path d="M6 19c.8-3 2.8-4.5 6-4.5S17.2 16 18 19"/>`)}</div>
-              <div><div class="label">产线负责人</div>${kpiValue(data.owner)}<div class="sub">${esc(ownerSub)}</div></div></article>
+            <article class="kpi people-block">
+              <div class="ico people">${svg(`<circle cx="9" cy="8" r="2.2"/><circle cx="16" cy="9" r="1.8"/><path d="M4.5 18c.6-2.4 2.4-3.6 4.5-3.6S13.4 15.6 14 18"/><path d="M14 14.6c1.4-.3 2.8.2 3.6 1.6"/>`)}</div>
+              <div><div class="label">产线人员</div>${kpiValue(data.staff)}</div>
+              <i class="vbar"></i>
+              <div class="ico owner">${svg(`<circle cx="12" cy="8" r="3"/><path d="M6 19c.8-3 2.8-4.5 6-4.5S17.2 16 18 19"/>`)}</div>
+              <div><div class="label">产线负责人</div>${kpiValue(data.owner)}</div>
+            </article>
           </div>
           <div class="fresh">
-            <div>数据时间 <b id="dataTime">${state.mode === "fail" || state.mode === "noperm" || state.mode === "loading" ? "—" : esc(state.dataTime)}</b>
-              <span class="muted"> · 统计范围 2026-11-19</span></div>
+            <div>数据时间 <b id="dataTime">${state.mode === "fail" || state.mode === "noperm" || state.mode === "loading" ? "—" : esc(state.dataTime)}</b></div>
             <div class="fresh-actions">
               <button type="button" class="btn" data-action="range" ${rangeDisabled ? "disabled" : ""}>统计范围</button>
               <button type="button" class="btn primary" data-action="refresh" ${refreshDisabled ? "disabled" : ""}>刷新</button>
